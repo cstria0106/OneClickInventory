@@ -1,6 +1,7 @@
 # How To Use
 
 ![](./images/1.png)
+
 Dress your avatar (use modular avatar or manual way).
 Hierarchy must be organized just like
 
@@ -19,13 +20,20 @@ Hierarchy must be organized just like
 ```
 
 ![](./images/2.png)
+
 Select GameObject containing cloths in hierarchy and add component 'Closet'.
+
 ![](./images/3.png)
+
 Setup closet properties in inspector.
 'Is unique' option means only one of closet item can be shown at one time.
+
 ![](./images/4.png)
+
 Select cloth GameObject and add component 'Closet Item'.
+
 ![](./images/5.png)
+
 Setup closet item properties in inspector.
 'Default' option means this item is enabled by default.
 'Additional objects' option means objects that should be shown together with this cloth.
