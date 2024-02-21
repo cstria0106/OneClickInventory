@@ -1,0 +1,15 @@
+{
+  "language": "언어",
+  "closet": "옷장",
+  "item": "아이템",
+  "customMenuName": "메뉴 이름",
+  "customMenuIcon": "메뉴 아이콘",
+  "isUnique": "하나만 나오게 하기",
+  "name": "이름",
+  "default": "기본",
+  "additionalObjects": "추가 오브젝트",
+  "customIcon": "아이콘",
+  "generateIcon": "아이콘 생성",
+  "noAvatar": "객체가 아바타 안에 있어야 합니다",
+  "noCloset": "객체가 옷장 안에 있어야 합니다"
+}

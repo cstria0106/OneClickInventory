@@ -1,0 +1,15 @@
+{
+  "language": "Language",
+  "closet": "Closet",
+  "item": "Item",
+  "customMenuName": "Custom menu name",
+  "customMenuIcon": "Custom menu icon",
+  "isUnique": "Is unique",
+  "name": "Name",
+  "default": "Default",
+  "additionalObjects": "Additional objects",
+  "customIcon": "Custom icon",
+  "generateIcon": "Generate icon",
+  "noAvatar": "This object must be in Avatar's hierarchy",
+  "noCloset": "This object must be in Closet's hierarchy"
+}
