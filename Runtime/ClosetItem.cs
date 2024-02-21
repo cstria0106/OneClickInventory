@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VRC.SDKBase;
 
 namespace dog.miruku.ndcloset.runtime
 {
     [AddComponentMenu("Non-Destructive Closet/Closet Item")]
-    public class ClosetItem : MonoBehaviour
+    public class ClosetItem : MonoBehaviour, IEditorOnly
     {
         [SerializeField] private string _itemName;
         public string ItemName { get => _itemName; private set => _itemName = value; }

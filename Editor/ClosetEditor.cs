@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using dog.miruku.ndcloset.runtime;
+using VRC.SDK3.Avatars.Components;
 
 namespace dog.miruku.ndcloset
 {
@@ -44,9 +45,16 @@ namespace dog.miruku.ndcloset
             }
         }
 
+        private static VRCAvatarDescriptor FindAvatar(Transform t)
+        {
+            if (t == null) return null;
+            if (t.TryGetComponent<VRCAvatarDescriptor>(out var descriptor)) return descriptor;
+            return FindAvatar(t.parent);
+        }
+
         public override void OnInspectorGUI()
         {
-            var avatar = _closet.FindAvatar();
+            var avatar = FindAvatar(_closet.transform.parent);
             serializedObject.Update();
             ClosetEditorUtil.Default();
             if (avatar == null)
