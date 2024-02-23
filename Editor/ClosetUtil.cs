@@ -12,7 +12,6 @@ using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace dog.miruku.ndcloset
 {
-    [AddComponentMenu("Non-Destructive Closet/Closet Util")]
     public class ClosetUtil
     {
         private static readonly string _generatedPathGuid = "6385f8da0e893d142aaaef7ed709f4bd";
@@ -83,8 +82,8 @@ namespace dog.miruku.ndcloset
         )
         {
             var clip = new AnimationClip();
-            var enabledKeys = new Keyframe[1] { new(0.0f, 1f) };
-            var disabledKeys = new Keyframe[1] { new(0.0f, 0f) };
+            var enabledKeys = new Keyframe[1] { new Keyframe(0.0f, 1f) };
+            var disabledKeys = new Keyframe[1] { new Keyframe(0.0f, 0f) };
             foreach (var o in enabledObjects)
             {
                 clip.SetCurve(GetRelativePath(o.transform, avatar.transform), typeof(GameObject), "m_IsActive", new AnimationCurve(enabledKeys));
@@ -261,8 +260,8 @@ namespace dog.miruku.ndcloset
                 var clips = new Dictionary<ClosetItem, AnimationClip>();
                 var items = _closet.Items;
 
-                Dictionary<string, Tuple<ClosetItem, List<GameObject>, List<GameObject>>> groups = new();
-                HashSet<GameObject> allObjects = new();
+                Dictionary<string, Tuple<ClosetItem, List<GameObject>, List<GameObject>>> groups = new Dictionary<string, Tuple<ClosetItem, List<GameObject>, List<GameObject>>>();
+                HashSet<GameObject> allObjects = new HashSet<GameObject>();
                 foreach (var item in items)
                 {
                     groups[item.ItemName] = (item, new List<GameObject>(), new List<GameObject>()).ToTuple();
@@ -280,7 +279,7 @@ namespace dog.miruku.ndcloset
                     groups[item.ItemName].Item3.AddRange(allObjects.Where(o => !gameObjects.Contains(o)));
                 }
 
-                foreach (var (_, (item, enabled, disabled)) in groups)
+                foreach (var (item, enabled, disabled) in groups.Values)
                 {
                     var clip = GenerateAnimationClip($"{_id}/{ItemId(item)}", avatar, enabled, disabled, item.EnabledAdditionalAnimations);
                     clips[item] = clip;
@@ -351,8 +350,9 @@ namespace dog.miruku.ndcloset
             private List<AnimatorController> GenerateNonUniqueAnimatorControllers(Dictionary<ClosetItem, AnimationClip> enabledClips, Dictionary<ClosetItem, AnimationClip> disabledClips)
             {
                 var controllers = new List<AnimatorController>();
-                foreach (var (item, enabledClip) in enabledClips)
+                foreach (var item in enabledClips.Keys)
                 {
+                    var enabledClip = enabledClips[item];
                     var disabledClip = disabledClips[item];
                     controllers.Add(GenerateNonUniqueAnimatorController(item, enabledClip, disabledClip));
                 }
@@ -399,8 +399,9 @@ namespace dog.miruku.ndcloset
                 var yGab = new Vector3(0, 50);
 
                 // Enabled animations
-                foreach (var (item, enabledClip) in clips)
+                foreach (var item in clips.Keys)
                 {
+                    var enabledClip = clips[item];
                     var state = layer.stateMachine.AddState(ItemId(item), position);
                     state.motion = enabledClip;
 
@@ -460,8 +461,8 @@ namespace dog.miruku.ndcloset
                 if (_closet.IsUnique)
                 {
                     var maParameters = ClosetUtil.GetOrAddComponent<ModularAvatarParameters>(_closet.gameObject);
-                    maParameters.parameters ??= new List<ParameterConfig>();
-                    maParameters.parameters.Add(new()
+                    if (maParameters.parameters == null) maParameters.parameters = new List<ParameterConfig>();
+                    maParameters.parameters.Add(new ParameterConfig()
                     {
                         nameOrPrefix = _id,
                         syncType = ParameterSyncType.Int,
@@ -475,8 +476,8 @@ namespace dog.miruku.ndcloset
                     foreach (var item in _closet.Items)
                     {
                         var maParameters = ClosetUtil.GetOrAddComponent<ModularAvatarParameters>(item.gameObject);
-                        maParameters.parameters ??= new List<ParameterConfig>();
-                        maParameters.parameters.Add(new()
+                        if (maParameters.parameters == null) maParameters.parameters = new List<ParameterConfig>();
+                        maParameters.parameters.Add(new ParameterConfig()
                         {
                             nameOrPrefix = ItemId(item),
                             syncType = ParameterSyncType.Bool,
@@ -508,7 +509,7 @@ namespace dog.miruku.ndcloset
                 if (_closet.IsUnique)
                 {
                     var (clips, disableAllClip) = GenerateUniqueClips(avatar);
-                    controllers = new() { GenerateUniqueAnimatorController(clips, disableAllClip) };
+                    controllers = new List<AnimatorController>() { GenerateUniqueAnimatorController(clips, disableAllClip) };
                 }
                 else
                 {
@@ -520,7 +521,7 @@ namespace dog.miruku.ndcloset
 
             private void SetupItemIndexes()
             {
-                _itemIndexes = new();
+                _itemIndexes = new Dictionary<ClosetItem, int>();
                 int index = 1;
                 foreach (var item in _closet.Items)
                 {

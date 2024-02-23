@@ -24,11 +24,11 @@ namespace dog.miruku.ndcloset
             }
         }
 
-        private static readonly Dictionary<string, Dictionary<string, string>> _cache = new();
+        private static readonly Dictionary<string, Dictionary<string, string>> _cache = new Dictionary<string, Dictionary<string, string>>();
 
         public static List<(string, string)> Languages
         {
-            get => new() {
+            get => new List<(string, string)>() {
                 ("en", "English"),
                 ("ko", "한국어"),
             };
@@ -43,7 +43,7 @@ namespace dog.miruku.ndcloset
             }
 
             Preload(_fallbackLanguage);
-            return _cache[_fallbackLanguage].GetValueOrDefault(key, key);
+            return _cache[_fallbackLanguage].ContainsKey(key) ? _cache[_fallbackLanguage][key] : key;
         }
 
         public static string Get(string key)

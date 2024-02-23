@@ -12,7 +12,7 @@ namespace dog.miruku.ndcloset.runtime
         public string ItemName { get => _itemName; private set => _itemName = value; }
         [SerializeField] private bool _default;
         public bool Default { get => _default; set => _default = value; }
-        [SerializeField] private List<GameObject> _additionalObjects = new();
+        [SerializeField] private List<GameObject> _additionalObjects = new List<GameObject>();
 
         [SerializeField] private Texture2D _customIcon;
         public Texture2D CustomIcon { get => _customIcon; set => _customIcon = value; }
@@ -21,10 +21,10 @@ namespace dog.miruku.ndcloset.runtime
 
         public IEnumerable<GameObject> GameObjects { get => new GameObject[] { gameObject }.Concat(_additionalObjects); }
 
-        [SerializeField] private List<AnimationClip> _enabledAdditionalAnimations = new();
+        [SerializeField] private List<AnimationClip> _enabledAdditionalAnimations = new List<AnimationClip>();
         public IEnumerable<AnimationClip> EnabledAdditionalAnimations => _enabledAdditionalAnimations;
 
-        [SerializeField] private List<VRC_AvatarParameterDriver.Parameter> _enabledParameters = new();
+        [SerializeField] private List<VRC_AvatarParameterDriver.Parameter> _enabledParameters = new List<VRC_AvatarParameterDriver.Parameter>();
         public IEnumerable<VRC_AvatarParameterDriver.Parameter> EnabledParameters => _enabledParameters;
 
         public void Validate()
