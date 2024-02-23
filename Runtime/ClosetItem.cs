@@ -21,6 +21,12 @@ namespace dog.miruku.ndcloset.runtime
 
         public IEnumerable<GameObject> GameObjects { get => new GameObject[] { gameObject }.Concat(_additionalObjects); }
 
+        [SerializeField] private List<AnimationClip> _enabledAdditionalAnimations = new();
+        public IEnumerable<AnimationClip> EnabledAdditionalAnimations => _enabledAdditionalAnimations;
+
+        [SerializeField] private List<VRC_AvatarParameterDriver.Parameter> _enabledParameters = new();
+        public IEnumerable<VRC_AvatarParameterDriver.Parameter> EnabledParameters => _enabledParameters;
+
         public void Validate()
         {
             var closet = Closet;

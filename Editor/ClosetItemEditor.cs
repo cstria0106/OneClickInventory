@@ -11,6 +11,9 @@ namespace dog.miruku.ndcloset
         private SerializedProperty _defaultProperty;
         private SerializedProperty _additionalObjectsProperty;
         private SerializedProperty _customIconProperty;
+        private SerializedProperty _enabledAdditionalAnimationsProperty;
+        // TODO: implement parameters editor
+        // private SerializedProperty _enabledParametersProperty;
 
 
         static ClosetItemEditor()
@@ -24,6 +27,9 @@ namespace dog.miruku.ndcloset
             _defaultProperty = serializedObject.FindProperty("_default");
             _additionalObjectsProperty = serializedObject.FindProperty("_additionalObjects");
             _customIconProperty = serializedObject.FindProperty("_customIcon");
+            _enabledAdditionalAnimationsProperty = serializedObject.FindProperty("_enabledAdditionalAnimations");
+            // TODO: implement parameters editor
+            // _enabledParametersProperty = serializedObject.FindProperty("_enabledParameters");
         }
 
         private static void DrawIconOnWindowItem(int instanceID, Rect rect)
@@ -66,6 +72,10 @@ namespace dog.miruku.ndcloset
             {
                 EditorGUILayout.PropertyField(_additionalObjectsProperty, new GUIContent(Localization.Get("additionalObjects")));
             }
+
+            EditorGUILayout.PropertyField(_enabledAdditionalAnimationsProperty, new GUIContent(Localization.Get("enabledAnimations")));
+            // TODO: implement parameters editor
+            // EditorGUILayout.PropertyField(_enabledParametersProperty, new GUIContent(Localization.Get("enabledParameters")));
             EditorGUILayout.PropertyField(_customIconProperty, new GUIContent(Localization.Get("customIcon")));
             if (item.CustomIcon != null)
             {

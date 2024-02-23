@@ -11,5 +11,8 @@
   "customIcon": "Custom icon",
   "generateIcon": "Generate icon",
   "noAvatar": "This object must be in Avatar's hierarchy",
-  "noCloset": "This object must be in Closet's hierarchy"
+  "noCloset": "This object must be in Closet's hierarchy",
+  "enabledParameters": "Parameter values when enabled",
+  "enabledAnimations": "Additional animations when enabled",
+  "disabledAnimations": "Additional animations when disabled"
 }

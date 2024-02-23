@@ -64,7 +64,23 @@ namespace dog.miruku.ndcloset
             Directory.CreateDirectory(_generatedPathRoot);
         }
 
-        public static AnimationClip GenerateAnimationClip(string key, VRCAvatarDescriptor avatar, IEnumerable<GameObject> enabledObjects, IEnumerable<GameObject> disabledObjects)
+        public static void CopyAnimationClip(AnimationClip from, AnimationClip to)
+        {
+            var curves = AnimationUtility.GetCurveBindings(from).ToList();
+            curves.AddRange(AnimationUtility.GetObjectReferenceCurveBindings(from));
+            foreach (var curve in curves)
+            {
+                to.SetCurve(curve.path, curve.type, curve.propertyName, AnimationUtility.GetEditorCurve(from, curve));
+            }
+        }
+
+        public static AnimationClip GenerateAnimationClip(
+            string key,
+            VRCAvatarDescriptor avatar,
+            IEnumerable<GameObject> enabledObjects,
+            IEnumerable<GameObject> disabledObjects,
+            IEnumerable<AnimationClip> additionalAnimations
+        )
         {
             var clip = new AnimationClip();
             var enabledKeys = new Keyframe[1] { new(0.0f, 1f) };
@@ -76,6 +92,10 @@ namespace dog.miruku.ndcloset
             foreach (var o in disabledObjects)
             {
                 clip.SetCurve(GetRelativePath(o.transform, avatar.transform), typeof(GameObject), "m_IsActive", new AnimationCurve(disabledKeys));
+            }
+            foreach (var c in additionalAnimations)
+            {
+                CopyAnimationClip(c, clip);
             }
 
             var path = GetAssetPath($"Animations/{key}.anim");
@@ -228,8 +248,8 @@ namespace dog.miruku.ndcloset
                 foreach (var item in items)
                 {
                     var itemId = ItemId(item);
-                    enabledClips.Add(item, ClosetUtil.GenerateAnimationClip($"{_id}/{itemId}_enabled", avatar, new GameObject[] { item.gameObject }, Enumerable.Empty<GameObject>()));
-                    disabledClips.Add(item, ClosetUtil.GenerateAnimationClip($"{_id}/{itemId}_disabled", avatar, Enumerable.Empty<GameObject>(), new GameObject[] { item.gameObject }));
+                    enabledClips.Add(item, GenerateAnimationClip($"{_id}/{itemId}_enabled", avatar, new GameObject[] { item.gameObject }, Enumerable.Empty<GameObject>(), item.EnabledAdditionalAnimations));
+                    disabledClips.Add(item, GenerateAnimationClip($"{_id}/{itemId}_disabled", avatar, Enumerable.Empty<GameObject>(), new GameObject[] { item.gameObject }, Enumerable.Empty<AnimationClip>()));
                 }
 
                 return (enabledClips, disabledClips);
@@ -262,23 +282,24 @@ namespace dog.miruku.ndcloset
 
                 foreach (var (_, (item, enabled, disabled)) in groups)
                 {
-                    var clip = ClosetUtil.GenerateAnimationClip($"{_id}/{ItemId(item)}", avatar, enabled, disabled);
+                    var clip = GenerateAnimationClip($"{_id}/{ItemId(item)}", avatar, enabled, disabled, item.EnabledAdditionalAnimations);
                     clips[item] = clip;
                 }
 
-                var disableAllClip = ClosetUtil.GenerateAnimationClip(
+                var disableAllClip = GenerateAnimationClip(
                     $"{_id}/disable_all",
                     avatar,
                     Enumerable.Empty<GameObject>(),
-                    allObjects
+                    allObjects,
+                    Enumerable.Empty<AnimationClip>()
                 );
 
                 return (clips, disableAllClip);
             }
 
-            private static void SetupTransition(AnimatorStateTransition transition)
+            private static void SetupTransition(AnimatorStateTransition transition, bool hasExitTime = false)
             {
-                transition.hasExitTime = false;
+                transition.hasExitTime = hasExitTime;
                 transition.exitTime = 0;
                 transition.duration = 0;
                 transition.canTransitionToSelf = false;
@@ -309,6 +330,9 @@ namespace dog.miruku.ndcloset
 
                 {
                     enabledState.motion = enabledClip;
+                    // TODO: implement parameter driver
+                    // var driver = enabledState.AddStateMachineBehaviour<VRC_AvatarParameterDriver>();
+                    // driver.parameters = item.EnabledParameters.ToList();
                     var transition = layer.stateMachine.AddAnyStateTransition(enabledState);
                     SetupTransition(transition);
                     transition.AddCondition(AnimatorConditionMode.If, 0, itemId);
@@ -319,7 +343,7 @@ namespace dog.miruku.ndcloset
                     SetupTransition(transition);
                     transition.AddCondition(AnimatorConditionMode.IfNot, 0, itemId);
                 }
-                var path = ClosetUtil.GetAssetPath($"Controllers/{itemId}.controller");
+                var path = GetAssetPath($"Controllers/{itemId}.controller");
                 AssetDatabase.CreateAsset(controller, path);
                 return controller;
             }
@@ -348,36 +372,52 @@ namespace dog.miruku.ndcloset
                 controller.AddLayer(layer);
                 controller.AddParameter(_id, AnimatorControllerParameterType.Int);
 
-                layer.stateMachine.defaultState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
                 layer.stateMachine.entryPosition = new Vector3(-200, 0);
                 layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
-                var position = new Vector3(0, 100);
-                var gab = new Vector3(0, 50);
-                foreach (var (item, clip) in clips)
-                {
-                    var state = layer.stateMachine.AddState(ItemId(item), position);
-                    state.motion = clip;
-                    var transition = layer.stateMachine.AddAnyStateTransition(state);
-                    SetupTransition(transition);
-                    transition.AddCondition(AnimatorConditionMode.Equals, _itemIndexes[item], _id);
-                    position += gab;
-                }
 
-                // Default or disable all state
-                var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 50));
+                // Default or disable animation
+                var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 0));
+                layer.stateMachine.defaultState = defaultState;
+
                 defaultState.motion = defaultItem != null ? clips[defaultItem] : disableAllClip;
                 {
-                    var transition = layer.stateMachine.AddAnyStateTransition(defaultState);
-                    SetupTransition(transition);
+                    var transition = layer.stateMachine.AddEntryTransition(defaultState);
                     transition.AddCondition(AnimatorConditionMode.Less, _itemIndexes.Values.Min(), _id);
                 }
                 {
-                    var transition = layer.stateMachine.AddAnyStateTransition(defaultState);
-                    SetupTransition(transition);
+                    var transition = layer.stateMachine.AddEntryTransition(defaultState);
                     transition.AddCondition(AnimatorConditionMode.Greater, _itemIndexes.Values.Max(), _id);
                 }
+                {
+                    var transition = defaultState.AddExitTransition();
+                    SetupTransition(transition);
+                    transition.AddCondition(AnimatorConditionMode.Greater, _itemIndexes.Values.Min() - 1, _id);
+                    transition.AddCondition(AnimatorConditionMode.Less, _itemIndexes.Values.Max() + 1, _id);
+                }
 
-                var path = ClosetUtil.GetAssetPath($"Controllers/{_id}.controller");
+                var position = new Vector3(0, 50);
+                var yGab = new Vector3(0, 50);
+
+                // Enabled animations
+                foreach (var (item, enabledClip) in clips)
+                {
+                    var state = layer.stateMachine.AddState(ItemId(item), position);
+                    state.motion = enabledClip;
+
+                    // setup entry
+                    var entryTransition = layer.stateMachine.AddEntryTransition(state);
+                    entryTransition.AddCondition(AnimatorConditionMode.Equals, _itemIndexes[item], _id);
+                    // setup exit
+                    var exitTransition = state.AddExitTransition();
+                    SetupTransition(exitTransition);
+                    exitTransition.AddCondition(AnimatorConditionMode.NotEqual, _itemIndexes[item], _id);
+
+                    position += yGab;
+                }
+
+                layer.stateMachine.exitPosition = new Vector3(400, 0);
+
+                var path = GetAssetPath($"Controllers/{_id}.controller");
                 AssetDatabase.CreateAsset(controller, path);
                 return controller;
             }
@@ -464,7 +504,6 @@ namespace dog.miruku.ndcloset
 
             private IEnumerable<AnimatorController> GenerateAnimation(VRCAvatarDescriptor avatar)
             {
-                // Generate clips
                 List<AnimatorController> controllers;
                 if (_closet.IsUnique)
                 {
