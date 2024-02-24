@@ -19,10 +19,10 @@ namespace dog.miruku.ndcloset.runtime
 
         public Closet Closet { get => GetCloset(transform); }
 
-        public IEnumerable<GameObject> GameObjects { get => new GameObject[] { gameObject }.Concat(_additionalObjects); }
+        public IEnumerable<GameObject> GameObjects { get => new GameObject[] { gameObject }.Concat(_additionalObjects.Where(e => e != null)); }
 
         [SerializeField] private List<AnimationClip> _enabledAdditionalAnimations = new List<AnimationClip>();
-        public IEnumerable<AnimationClip> EnabledAdditionalAnimations => _enabledAdditionalAnimations;
+        public IEnumerable<AnimationClip> EnabledAdditionalAnimations => _enabledAdditionalAnimations.Where(e => e != null);
 
         [SerializeField] private List<VRC_AvatarParameterDriver.Parameter> _enabledParameters = new List<VRC_AvatarParameterDriver.Parameter>();
         public IEnumerable<VRC_AvatarParameterDriver.Parameter> EnabledParameters => _enabledParameters;
