@@ -34,7 +34,7 @@ namespace dog.miruku.ndcloset
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .Run("Generating closet", ctx =>
             {
-                Asset.ClearGeneratedAssets();
+                AssetUtil.ClearGeneratedAssets();
 
                 // Get avatar closet config
                 string menuName = "Closet";

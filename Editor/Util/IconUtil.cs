@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace dog.miruku.ndcloset
 {
-    public class Icon
+    public class IconUtil
     {
         private static Texture2D ResizeTexture(Texture2D source, int targetWidth, int targetHeight)
         {
@@ -116,7 +116,7 @@ namespace dog.miruku.ndcloset
             var resizedIcon = ResizeTexture(clippedIcon, 256, 256);
             var bytes = resizedIcon.EncodeToPNG();
 
-            var path = Asset.GetPersistentPath("Icons/" + GUID.Generate() + ".png");
+            var path = AssetUtil.GetPersistentPath("Icons/" + GUID.Generate() + ".png");
             System.IO.File.WriteAllBytes(path, bytes);
             AssetDatabase.Refresh();
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;

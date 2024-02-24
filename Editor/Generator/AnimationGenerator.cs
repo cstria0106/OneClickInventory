@@ -81,7 +81,7 @@ namespace dog.miruku.ndcloset
                 CopyAnimationClip(c, clip);
             }
 
-            var path = Asset.GetPath($"Animations/{key}.anim");
+            var path = AssetUtil.GetPath($"Animations/{key}.anim");
             AssetDatabase.CreateAsset(clip, path);
             return clip;
         }
@@ -191,7 +191,7 @@ namespace dog.miruku.ndcloset
                 SetupTransition(transition);
                 transition.AddCondition(AnimatorConditionMode.IfNot, 0, parameterName);
             }
-            var path = Asset.GetPath($"Controllers/{Ctx.ClosetId}/{Ctx.ItemIndex(item)}.controller");
+            var path = AssetUtil.GetPath($"Controllers/{Ctx.ClosetId}/{Ctx.ItemIndex(item)}.controller");
             AssetDatabase.CreateAsset(controller, path);
             return controller;
         }
@@ -267,7 +267,7 @@ namespace dog.miruku.ndcloset
 
             layer.stateMachine.exitPosition = new Vector3(400, 0);
 
-            var path = Asset.GetPath($"Controllers/{Ctx.ClosetId}.controller");
+            var path = AssetUtil.GetPath($"Controllers/{Ctx.ClosetId}.controller");
             AssetDatabase.CreateAsset(controller, path);
             return controller;
         }

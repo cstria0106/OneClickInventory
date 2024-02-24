@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using UnityEditor;
 
-public class Asset
+public class AssetUtil
 {
     private static readonly string _generatedPathGuid = "6385f8da0e893d142aaaef7ed709f4bd";
     private static readonly string _generatedPathRoot = AssetDatabase.GUIDToAssetPath(_generatedPathGuid);
@@ -15,7 +15,9 @@ public class Asset
         {
             Directory.CreateDirectory(directoryPath);
         }
+        AssetDatabase.Refresh();
     }
+
     public static string GetPath(string key)
     {
         var assetPath = $"{_generatedPathRoot}/{key}";
@@ -38,6 +40,7 @@ public class Asset
         }
         Directory.CreateDirectory(_generatedPathRoot);
         File.Create(_generatedPathRoot + "/dummy");
+        AssetDatabase.Refresh();
     }
 
 }

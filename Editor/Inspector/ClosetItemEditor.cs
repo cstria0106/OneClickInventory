@@ -84,7 +84,7 @@ namespace dog.miruku.ndcloset
             }
             if (GUILayout.Button(Localization.Get("generateIcon")))
             {
-                var icon = Icon.Generate(item);
+                var icon = IconUtil.Generate(item);
                 item.CustomIcon = icon;
             }
             serializedObject.ApplyModifiedProperties();
