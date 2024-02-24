@@ -4,7 +4,7 @@
   "item": "아이템",
   "customMenuName": "메뉴 이름",
   "customMenuIcon": "메뉴 아이콘",
-  "isUnique": "하나만 나오게 하기",
+  "isUnique": "하나만 활성화",
   "name": "이름",
   "default": "기본",
   "additionalObjects": "추가 오브젝트",
