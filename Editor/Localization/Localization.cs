@@ -7,7 +7,7 @@ namespace dog.miruku.ndcloset
 {
     public class Localization
     {
-        private static readonly string _localizationPathGuid = "89b750cba91e4c14f8856730a04416b2";
+        private static readonly string _localizationPathGuid = "d9780e86d63caeb4b9287b9a4df854d9";
         private static readonly string _localizationPathRoot = AssetDatabase.GUIDToAssetPath(_localizationPathGuid);
 
         private static readonly string _fallbackLanguage = "en";

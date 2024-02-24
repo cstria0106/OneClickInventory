@@ -18,7 +18,7 @@ namespace dog.miruku.ndcloset
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            ClosetEditorUtil.Default();
+            ClosetInspector.Default();
             EditorGUILayout.PropertyField(_customMenuNameProperty, new GUIContent(Localization.Get("customMenuName")));
             EditorGUILayout.PropertyField(_customIconProperty, new GUIContent(Localization.Get("customMenuIcon")));
             serializedObject.ApplyModifiedProperties();

@@ -56,7 +56,7 @@ namespace dog.miruku.ndcloset
         {
             var avatar = FindAvatar(_closet.transform.parent);
             serializedObject.Update();
-            ClosetEditorUtil.Default();
+            ClosetInspector.Default();
             if (avatar == null)
             {
                 EditorGUILayout.HelpBox(Localization.Get("noAvatar"), MessageType.Warning);

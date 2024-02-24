@@ -58,7 +58,7 @@ namespace dog.miruku.ndcloset
             var closet = item.Closet;
 
             serializedObject.Update();
-            ClosetEditorUtil.Default();
+            ClosetInspector.Default();
 
             if (closet == null)
             {
@@ -84,7 +84,7 @@ namespace dog.miruku.ndcloset
             }
             if (GUILayout.Button(Localization.Get("generateIcon")))
             {
-                var icon = ClosetUtil.GenerateIcon(item);
+                var icon = Icon.Generate(item);
                 item.CustomIcon = icon;
             }
             serializedObject.ApplyModifiedProperties();

@@ -4,7 +4,7 @@ using dog.miruku.ndcloset.runtime;
 
 namespace dog.miruku.ndcloset
 {
-    public class ClosetEditorUtil
+    public class ClosetInspector
     {
         private static int _selectedLanguage;
         public static void Default()
