@@ -1,1 +1,3 @@
-/Runtime/Generated
+/Runtime/Generated/*
+!/Runtime/Generated/dummy
+!/Runtime/Generated/dummy.meta
