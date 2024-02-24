@@ -260,11 +260,11 @@ namespace dog.miruku.ndcloset
                 var clips = new Dictionary<ClosetItem, AnimationClip>();
                 var items = _closet.Items;
 
-                Dictionary<string, Tuple<ClosetItem, List<GameObject>, List<GameObject>>> groups = new Dictionary<string, Tuple<ClosetItem, List<GameObject>, List<GameObject>>>();
+                Dictionary<ClosetItem, Tuple<List<GameObject>, List<GameObject>>> groups = new Dictionary<ClosetItem, Tuple<List<GameObject>, List<GameObject>>>();
                 HashSet<GameObject> allObjects = new HashSet<GameObject>();
                 foreach (var item in items)
                 {
-                    groups[item.ItemName] = (item, new List<GameObject>(), new List<GameObject>()).ToTuple();
+                    groups[item] = (new List<GameObject>(), new List<GameObject>()).ToTuple();
                     foreach (var o in item.GameObjects)
                     {
                         allObjects.Add(o);
@@ -274,13 +274,14 @@ namespace dog.miruku.ndcloset
                 foreach (var item in items)
                 {
                     var gameObjects = item.GameObjects;
-                    groups[item.ItemName].Item2.AddRange(gameObjects);
+                    groups[item].Item1.AddRange(gameObjects);
                     // Add only not enabled object into disabled object
-                    groups[item.ItemName].Item3.AddRange(allObjects.Where(o => !gameObjects.Contains(o)));
+                    groups[item].Item2.AddRange(allObjects.Where(o => !gameObjects.Contains(o)));
                 }
 
-                foreach (var (item, enabled, disabled) in groups.Values)
+                foreach (var item in groups.Keys)
                 {
+                    var (enabled, disabled) = groups[item];
                     var clip = GenerateAnimationClip($"{_id}/{ItemId(item)}", avatar, enabled, disabled, item.EnabledAdditionalAnimations);
                     clips[item] = clip;
                 }
