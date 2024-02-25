@@ -4,9 +4,9 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - _customIcon: {fileID: 2800000, guid: 56b346f363b7afb41b4a04faadac4686, type: 3}
+  - _customIcon: {instanceID: 0}
   executionOrder: 0
-  icon: {instanceID: 0}
+  icon: {fileID: 2800000, guid: b53bfb875d087ce4cb00929757233a01, type: 3}
   userData: 
   assetBundleName: 
   assetBundleVariant: 

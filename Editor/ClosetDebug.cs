@@ -37,7 +37,14 @@ namespace dog.miruku.ndcloset
         {
             var cloned = GameObject.Instantiate(avatar.gameObject);
             cloned.name = avatar.gameObject.name + "(Clone)";
-            Generator.Generate(cloned.GetComponent<VRCAvatarDescriptor>());
+            try
+            {
+                Generator.Generate(cloned.GetComponent<VRCAvatarDescriptor>());
+            }
+            catch
+            {
+                GameObject.DestroyImmediate(cloned);
+            }
         }
     }
 }

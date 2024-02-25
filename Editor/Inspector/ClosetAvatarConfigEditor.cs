@@ -28,7 +28,8 @@ namespace dog.miruku.ndcloset
             ClosetEditorUtil.Footer(avatar, _avatarHierarchyFolding);
             EditorGUILayout.PropertyField(_customMenuNameProperty, new GUIContent(Localization.Get("customMenuName")));
             EditorGUILayout.PropertyField(_customIconProperty, new GUIContent(Localization.Get("customMenuIcon")));
-            if (GUILayout.Button("Generate for test"))
+
+            if (GUILayout.Button("Clone and apply for test"))
             {
                 ClosetDebug.CloneAndApply(avatar);
             }
