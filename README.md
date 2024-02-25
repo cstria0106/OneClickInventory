@@ -1,11 +1,14 @@
 # Non-Destructive Closet
 
-### [Add to your project](https://cstria0106.github.io/vpm-repos/)
-
 [English](https://github.com/cstria0106/NonDestructiveCloset/blob/main/README.md) | [Korean](https://github.com/cstria0106/NonDestructiveCloset/blob/main/README.ko.md)
 
 - This plugin allows create VRChat closet without any knowledge of Unity animation.
 - Provides way to create closet in non-destructive way thank to [Non-Destructive Framework](https://github.com/bdunderscore/ndmf).
+
+### Installation
+
+- [Add to VPM (CreatorCompanion)](https://cstria0106.github.io/vpm-repos/)
+- [Download unitypackage from releases](https://github.com/cstria0106/NonDestructiveCloset/releases)
 
 ### Features
 

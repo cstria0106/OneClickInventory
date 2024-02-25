@@ -1,11 +1,14 @@
 # Non-Destructive Closet
 
-### [프로젝트에 추가하기](https://cstria0106.github.io/vpm-repos/)
-
 [English](https://github.com/cstria0106/NonDestructiveCloset/blob/main/README.md) | [Korean](https://github.com/cstria0106/NonDestructiveCloset/blob/main/README.ko.md)
 
 - 이 플러그인은 유니티 애니메이션에 대한 지식 없이 VRChat 옷장을 만들 수 있게 해줍니다.
 - [Non-Destructive Framework](https://github.com/bdunderscore/ndmf)를 활용하여 비파괴적인 방법으로 옷장을 만들 수 있습니다.
+
+### 설치
+
+- [VPM에 추가 (CreatorCompanion)](https://cstria0106.github.io/vpm-repos/)
+- [릴리즈 페이지에서 unitypackage 다운로드](https://github.com/cstria0106/NonDestructiveCloset/releases)
 
 ### 기능
 
