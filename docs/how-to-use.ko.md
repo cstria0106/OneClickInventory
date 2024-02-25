@@ -2,6 +2,8 @@
 
 ## 기본 사용법
 
+https://github.com/cstria0106/NonDestructiveCloset/assets/11474150/0f8f1d61-c947-49cd-85a7-ac0e246ed96a
+
 1.  옷 입히기
     아바타에 옷을 입히세요. 모듈러 아바타를 사용해도 되고 손수 입혀도 됩니다.
     하이어라키를 다음과 같이 구성합니다.
@@ -28,5 +30,7 @@
    플레이 버튼을 누르거나 VRChat에 업로드하면 자동으로 옷장이 생성됩니다
 
 ## 서브메뉴 추가하기
+
+https://github.com/cstria0106/NonDestructiveCloset/assets/11474150/264bd70d-6d17-4341-8122-9b5f3a9c9b7d
 
 Closet 컴포넌트가 있는 게임 오브젝트를 중첩하여 서브 메뉴를 만들 수 있습니다.
