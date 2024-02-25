@@ -15,3 +15,11 @@
 ### 사용법
 
 이 [페이지](https://github.com/cstria0106/NonDestructiveCloset/blob/main/docs/how-to-use.ko.md)를 참고하세요.
+
+### 라이센스
+
+일부 아이콘 에셋은 Flaticon의 Freepik의 소유입니다.
+
+- https://www.flaticon.com/free-icons/fashion
+
+그 외의 파일은 MIT License가 적용됩니다.

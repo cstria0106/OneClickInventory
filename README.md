@@ -15,3 +15,11 @@
 ### How To Use
 
 Please refer to this [page](https://github.com/cstria0106/NonDestructiveCloset/blob/main/docs/how-to-use.md).
+
+### Licenses
+
+Some icon assets are created by Freepik of Flaticon.
+
+- https://www.flaticon.com/free-icons/fashion
+
+All other files are under MIT License.
