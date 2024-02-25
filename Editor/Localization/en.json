@@ -4,9 +4,13 @@
   "item": "Item",
   "customMenuName": "Custom menu name",
   "customMenuIcon": "Custom menu icon",
-  "isUnique": "Is unique",
+  "isUnique": "Enable only one item",
   "name": "Name",
-  "default": "Default",
+  "defaultUnique": "Set as default item of closet",
+  "default": "Set enabled by default",
+  "defaultItem": "Default item",
+  "items": "Items",
+  "saved": "Saved",
   "additionalObjects": "Additional objects",
   "customIcon": "Custom icon",
   "generateIcon": "Generate icon",
@@ -14,5 +18,10 @@
   "noCloset": "This object must be in Closet's hierarchy",
   "enabledParameters": "Parameter values when enabled",
   "enabledAnimations": "Additional animations when enabled",
-  "disabledAnimations": "Additional animations when disabled"
+  "enable": "Enable",
+  "menu": "Menu",
+  "etc": "Etc",
+  "avatar": "Avatar",
+  "avatarHierarchy": "Avatar closet hierarchy",
+  "usedParameterMemory": "Used parameter memory"
 }

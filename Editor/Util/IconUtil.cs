@@ -22,10 +22,10 @@ namespace dog.miruku.ndcloset
             return result;
         }
 
-        public static Texture2D Generate(ClosetItem item)
+        public static Texture2D Generate(ClosetNode node)
         {
             var cloned = new GameObject();
-            foreach (var o in item.GameObjects)
+            foreach (var o in node.RelatedGameObjects)
             {
                 var clone = GameObject.Instantiate(o);
                 clone.transform.SetParent(cloned.transform);

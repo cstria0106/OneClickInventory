@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using dog.miruku.ndcloset;
+using dog.miruku.ndcloset.runtime;
 using nadena.dev.modular_avatar.core;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -8,98 +11,108 @@ using VRC.SDK3.Avatars.ScriptableObjects;
 
 public class MenuGenerator
 {
-    private readonly GeneratorContext _context;
-    private GeneratorContext Ctx => _context;
 
-    public MenuGenerator(GeneratorContext context)
+    private static ModularAvatarMenuItem AddSubmenu(string name, Texture2D icon, Transform parent)
     {
-        _context = context;
-    }
+        var menuObject = new GameObject(name);
+        menuObject.transform.SetParent(parent);
+        var menu = menuObject.AddComponent<ModularAvatarMenuItem>();
 
-    private void CreateMAMenu(Transform parent)
-    {
-        var closetMenuObject = new GameObject(Ctx.Closet.ClosetName);
-        closetMenuObject.transform.SetParent(parent);
-
-        foreach (var item in Ctx.Closet.Items)
+        menu.Control = new VRCExpressionsMenu.Control()
         {
-            var itemMenuObject = new GameObject(item.ItemName);
-            itemMenuObject.transform.SetParent(closetMenuObject.transform);
-            var itemMenu = itemMenuObject.AddComponent<ModularAvatarMenuItem>();
-            itemMenu.Control = new VRCExpressionsMenu.Control()
-            {
-                name = item.ItemName,
-                type = VRCExpressionsMenu.Control.ControlType.Toggle,
-                value = Ctx.Closet.IsUnique ? Ctx.ItemIndex(item) : 1,
-                icon = item.CustomIcon,
-                parameter = new VRCExpressionsMenu.Control.Parameter()
-                {
-                    name = Ctx.Closet.IsUnique ? Ctx.ClosetId : Ctx.NonUniqueParameterName(item),
-                },
-            };
-        }
-
-        var closetMenu = closetMenuObject.AddComponent<ModularAvatarMenuItem>();
-        closetMenu.Control = new VRCExpressionsMenu.Control()
-        {
-            name = Ctx.Closet.ClosetName,
-            icon = Ctx.Closet.CustomIcon,
+            name = name,
+            icon = icon,
             type = VRCExpressionsMenu.Control.ControlType.SubMenu,
+            value = 0,
         };
-        closetMenu.MenuSource = SubmenuSource.Children;
+        menu.MenuSource = SubmenuSource.Children;
+        return menu;
     }
 
-    private void CreateMAParameters()
+    private static ModularAvatarMenuItem AddToggleMenu(string name, Texture2D icon, string parameter, int value, Transform parent)
     {
-        if (Ctx.Closet.IsUnique)
+        var menuObject = new GameObject(name);
+        menuObject.transform.SetParent(parent);
+        var menu = menuObject.AddComponent<ModularAvatarMenuItem>();
+
+        menu.Control = new VRCExpressionsMenu.Control()
         {
-            var maParameters = Util.GetOrAddComponent<ModularAvatarParameters>(Ctx.Closet.gameObject);
-            if (maParameters.parameters == null) maParameters.parameters = new List<ParameterConfig>();
-            maParameters.parameters.Add(new ParameterConfig()
+            name = name,
+            icon = icon,
+            type = VRCExpressionsMenu.Control.ControlType.Toggle,
+            parameter = new VRCExpressionsMenu.Control.Parameter()
             {
-                nameOrPrefix = Ctx.ClosetId,
-                syncType = ParameterSyncType.Int,
-                defaultValue = 0,
-                saved = true,
-                localOnly = false,
-            });
-        }
-        else
+                name = parameter
+            },
+            value = value,
+        };
+        return menu;
+    }
+
+    private static void CreateMAMenu(ClosetNode node, Transform parent)
+    {
+        if (node.IsCloset)
         {
-            foreach (var item in Ctx.Closet.Items)
+            var submenu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
+            if (node.Parent != null) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterIntValue, submenu.transform);
+            foreach (var child in node.Children)
             {
-                var maParameters = Util.GetOrAddComponent<ModularAvatarParameters>(item.gameObject);
-                if (maParameters.parameters == null) maParameters.parameters = new List<ParameterConfig>();
-                maParameters.parameters.Add(new ParameterConfig()
-                {
-                    nameOrPrefix = Ctx.NonUniqueParameterName(item),
-                    syncType = ParameterSyncType.Bool,
-                    defaultValue = item.Default ? 1 : 0,
-                    saved = true,
-                    localOnly = false,
-                });
+                CreateMAMenu(child, submenu.transform);
             }
         }
+        else if (node.IsItem)
+        {
+            AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterIntValue, parent);
+        }
     }
 
-    private void CreateMAMergeAnimator(IEnumerable<AnimatorController> controllers)
+    private static Dictionary<string, ParameterConfig> GetMAParameterConfigs(ClosetNode node, Dictionary<string, ParameterConfig> configs = null)
+    {
+        if (configs == null) configs = new Dictionary<string, ParameterConfig>();
+
+        if (node.ParameterName != null && !configs.ContainsKey(node.ParameterName))
+        {
+            configs[node.ParameterName] =
+                new ParameterConfig()
+                {
+                    nameOrPrefix = node.ParameterName,
+                    syncType = node.ParameterIsIndex ? ParameterSyncType.Int : ParameterSyncType.Bool,
+                    defaultValue = node.ParameterDefaultValue,
+                    saved = true,
+                    localOnly = false
+                };
+        }
+
+        foreach (var child in node.Children) configs = GetMAParameterConfigs(child, configs);
+
+        return configs;
+    }
+
+    private static void CreateMAParameters(ClosetNode node)
+    {
+        var parameters = node.Value.gameObject.AddComponent<ModularAvatarParameters>();
+        var configs = GetMAParameterConfigs(node);
+        parameters.parameters = configs.Values.ToList();
+    }
+
+    private static void CreateMAMergeAnimator(ClosetNode node, IEnumerable<AnimatorController> controllers)
     {
         // Add merge animator
         foreach (var controller in controllers)
         {
-            var maMergeAnimator = Ctx.Closet.gameObject.AddComponent<ModularAvatarMergeAnimator>();
-            maMergeAnimator.animator = controller;
-            maMergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
-            maMergeAnimator.deleteAttachedAnimator = true;
-            maMergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
-            maMergeAnimator.matchAvatarWriteDefaults = true;
+            var mergeAnimator = node.Value.gameObject.AddComponent<ModularAvatarMergeAnimator>();
+            mergeAnimator.animator = controller;
+            mergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
+            mergeAnimator.deleteAttachedAnimator = true;
+            mergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
+            mergeAnimator.matchAvatarWriteDefaults = true;
         }
     }
 
-    public void Generate(Transform parent, IEnumerable<AnimatorController> controllers)
+    public static void Generate(ClosetNode node, IEnumerable<AnimatorController> controllers, Transform menuParent)
     {
-        CreateMAMergeAnimator(controllers);
-        CreateMAParameters();
-        CreateMAMenu(parent);
+        CreateMAMergeAnimator(node, controllers);
+        CreateMAParameters(node);
+        CreateMAMenu(node, menuParent);
     }
 }

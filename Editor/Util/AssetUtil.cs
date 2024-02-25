@@ -14,8 +14,8 @@ public class AssetUtil
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
+            AssetDatabase.Refresh();
         }
-        AssetDatabase.Refresh();
     }
 
     public static string GetPath(string key)

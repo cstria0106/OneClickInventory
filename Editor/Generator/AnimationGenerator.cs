@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using dog.miruku.ndcloset.runtime;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -11,26 +11,25 @@ namespace dog.miruku.ndcloset
 {
     public class AnimationGenerator
     {
-        private readonly GeneratorContext _context;
-        private GeneratorContext Ctx => _context;
-        public AnimationGenerator(GeneratorContext context)
-        {
-            _context = context;
-        }
-
-        public IEnumerable<AnimatorController> GenerateControllers()
+        public static IEnumerable<AnimatorController> GenerateControllers(ClosetNode node)
         {
             List<AnimatorController> controllers;
-            if (Ctx.Closet.IsUnique)
+            if (node.Value.IsUnique)
             {
-                var (clips, disableAllClip) = GenerateUniqueClips();
-                controllers = new List<AnimatorController>() { GenerateUniqueAnimatorController(clips, disableAllClip) };
+                var (clips, disableAllClip) = GenerateUniqueClips(node);
+                controllers = new List<AnimatorController>() { GenerateUniqueAnimatorController(node, clips, disableAllClip) };
             }
             else
             {
-                var (enabledClips, disabledClips) = GenerateNonUniqueClips();
+                var (enabledClips, disabledClips) = GenerateNonUniqueClips(node);
                 controllers = GenerateNonUniqueAnimatorControllers(enabledClips, disabledClips);
             }
+
+            foreach (var child in node.Children)
+            {
+                controllers.AddRange(GenerateControllers(child));
+            }
+
             return controllers;
         }
 
@@ -87,56 +86,45 @@ namespace dog.miruku.ndcloset
         }
 
 
-        private (Dictionary<ClosetItem, AnimationClip>, Dictionary<ClosetItem, AnimationClip>) GenerateNonUniqueClips()
+        private static (Dictionary<ClosetNode, AnimationClip>, Dictionary<ClosetNode, AnimationClip>) GenerateNonUniqueClips(ClosetNode node)
         {
-            var enabledClips = new Dictionary<ClosetItem, AnimationClip>();
-            var disabledClips = new Dictionary<ClosetItem, AnimationClip>();
-            var items = Ctx.Closet.Items;
+            var enabledClips = new Dictionary<ClosetNode, AnimationClip>();
+            var disabledClips = new Dictionary<ClosetNode, AnimationClip>();
 
-            foreach (var item in items)
+            foreach (var child in node.Children)
             {
-                enabledClips.Add(item, GenerateAnimationClip($"{Ctx.ClosetId}/{Ctx.ItemIndex(item)}_enabled", Ctx.Avatar, new GameObject[] { item.gameObject }, Enumerable.Empty<GameObject>(), item.EnabledAdditionalAnimations));
-                disabledClips.Add(item, GenerateAnimationClip($"{Ctx.ClosetId}/{Ctx.ItemIndex(item)}_disabled", Ctx.Avatar, Enumerable.Empty<GameObject>(), new GameObject[] { item.gameObject }, Enumerable.Empty<AnimationClip>()));
+                enabledClips.Add(child, GenerateAnimationClip($"{child.Key}_enabled", child.Avatar, child.Value.GameObjects, Enumerable.Empty<GameObject>(), child.Value.AdditionalAnimations));
+                disabledClips.Add(child, GenerateAnimationClip($"{child.Key}_disabled", child.Avatar, new GameObject[] { }, child.Value.GameObjects, Enumerable.Empty<AnimationClip>()));
             }
 
             return (enabledClips, disabledClips);
         }
 
 
-        private (Dictionary<ClosetItem, AnimationClip>, AnimationClip) GenerateUniqueClips()
+        private static (Dictionary<ClosetNode, AnimationClip>, AnimationClip) GenerateUniqueClips(ClosetNode node)
         {
-            var clips = new Dictionary<ClosetItem, AnimationClip>();
-            var items = Ctx.Closet.Items;
+            var allObjects = node.Children.SelectMany(child => child.Value.GameObjects).ToImmutableHashSet();
+            var groups = node.Children.Select(
+                child => (
+                    child,
+                    enabled: child.Value.GameObjects.ToList(),
+                    disabled: allObjects.Where(o => !child.Value.GameObjects.Contains(o)).ToList()
+                )
+            ).ToDictionary(
+                e => e.child,
+                e => (e.enabled, e.disabled)
+            );
 
-            Dictionary<ClosetItem, Tuple<List<GameObject>, List<GameObject>>> groups = new Dictionary<ClosetItem, Tuple<List<GameObject>, List<GameObject>>>();
-            HashSet<GameObject> allObjects = new HashSet<GameObject>();
-            foreach (var item in items)
-            {
-                groups[item] = (new List<GameObject>(), new List<GameObject>()).ToTuple();
-                foreach (var o in item.GameObjects)
-                {
-                    allObjects.Add(o);
-                }
-            }
+            // generate enabled clips
+            var clips = groups.ToDictionary(
+                e => e.Key,
+                e => GenerateAnimationClip(e.Key.Key, e.Key.Avatar, e.Value.enabled, e.Value.disabled, e.Key.Value.AdditionalAnimations)
+            );
 
-            foreach (var item in items)
-            {
-                var gameObjects = item.GameObjects;
-                groups[item].Item1.AddRange(gameObjects);
-                // Add only not enabled object into disabled object
-                groups[item].Item2.AddRange(allObjects.Where(o => !gameObjects.Contains(o)));
-            }
-
-            foreach (var item in groups.Keys)
-            {
-                var (enabled, disabled) = groups[item];
-                var clip = GenerateAnimationClip($"{Ctx.ClosetId}/{Ctx.ItemIndex(item)}", Ctx.Avatar, enabled, disabled, item.EnabledAdditionalAnimations);
-                clips[item] = clip;
-            }
-
+            // generate disable all clips
             var disableAllClip = GenerateAnimationClip(
-                $"{Ctx.ClosetId}/disable_all",
-                Ctx.Avatar,
+                $"{node.Key}_disable_all",
+                node.Avatar,
                 Enumerable.Empty<GameObject>(),
                 allObjects,
                 Enumerable.Empty<AnimationClip>()
@@ -153,18 +141,17 @@ namespace dog.miruku.ndcloset
             transition.canTransitionToSelf = false;
         }
 
-        private AnimatorController GenerateNonUniqueAnimatorController(ClosetItem item, AnimationClip enabledClip, AnimationClip disabledClip)
+        private static AnimatorController GenerateNonUniqueAnimatorController(ClosetNode node, AnimationClip enabledClip, AnimationClip disabledClip)
         {
-            var parameterName = Ctx.NonUniqueParameterName(item);
             var controller = new AnimatorController();
             var layer = new AnimatorControllerLayer
             {
                 stateMachine = new AnimatorStateMachine(),
-                name = item.ItemName
+                name = node.Value.Name
             };
 
             controller.AddLayer(layer);
-            controller.AddParameter(parameterName, AnimatorControllerParameterType.Bool);
+            controller.AddParameter(node.ParameterName, AnimatorControllerParameterType.Bool);
 
             layer.stateMachine.defaultState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
@@ -178,96 +165,75 @@ namespace dog.miruku.ndcloset
 
             {
                 enabledState.motion = enabledClip;
-                // TODO: implement parameter driver
-                // var driver = enabledState.AddStateMachineBehaviour<VRCCtx.AvatarParameterDriver>();
-                // driver.parameters = item.EnabledParameters.ToList();
                 var transition = layer.stateMachine.AddAnyStateTransition(enabledState);
                 SetupTransition(transition);
-                transition.AddCondition(AnimatorConditionMode.If, 0, parameterName);
+                transition.AddCondition(AnimatorConditionMode.If, 0, node.ParameterName);
             }
             {
                 disabledState.motion = disabledClip;
                 var transition = layer.stateMachine.AddAnyStateTransition(disabledState);
                 SetupTransition(transition);
-                transition.AddCondition(AnimatorConditionMode.IfNot, 0, parameterName);
+                transition.AddCondition(AnimatorConditionMode.IfNot, 0, node.ParameterName);
             }
-            var path = AssetUtil.GetPath($"Controllers/{Ctx.ClosetId}/{Ctx.ItemIndex(item)}.controller");
+            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
             AssetDatabase.CreateAsset(controller, path);
             return controller;
         }
 
-        private List<AnimatorController> GenerateNonUniqueAnimatorControllers(Dictionary<ClosetItem, AnimationClip> enabledClips, Dictionary<ClosetItem, AnimationClip> disabledClips)
-        {
-            var controllers = new List<AnimatorController>();
-            foreach (var item in enabledClips.Keys)
-            {
-                var enabledClip = enabledClips[item];
-                var disabledClip = disabledClips[item];
-                controllers.Add(GenerateNonUniqueAnimatorController(item, enabledClip, disabledClip));
-            }
-            return controllers;
-        }
+        private static List<AnimatorController> GenerateNonUniqueAnimatorControllers(
+            Dictionary<ClosetNode, AnimationClip> enabledClips,
+            Dictionary<ClosetNode, AnimationClip> disabledClips
+        ) => enabledClips.Keys
+                    .Select(node => GenerateNonUniqueAnimatorController(node, enabledClips[node], disabledClips[node]))
+                    .ToList();
 
-        private AnimatorController GenerateUniqueAnimatorController(Dictionary<ClosetItem, AnimationClip> clips, AnimationClip disableAllClip)
+        private static AnimatorController GenerateUniqueAnimatorController(ClosetNode node, Dictionary<ClosetNode, AnimationClip> clips, AnimationClip disableAllClip)
         {
-            var defaultItem = Ctx.Closet.DefaultItem;
+            var defaultNode = node.Children.FirstOrDefault(e => e.Value.Default);
             var controller = new AnimatorController();
             var layer = new AnimatorControllerLayer
             {
                 stateMachine = new AnimatorStateMachine(),
-                name = Ctx.Closet.ClosetName
+                name = node.Key
             };
 
             controller.AddLayer(layer);
-            controller.AddParameter(Ctx.ClosetId, AnimatorControllerParameterType.Int);
+            controller.AddParameter(node.UniqueKey, AnimatorControllerParameterType.Int);
 
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
 
-            // Default or disable animation
-            var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 0));
-            layer.stateMachine.defaultState = defaultState;
-
-            defaultState.motion = defaultItem != null ? clips[defaultItem] : disableAllClip;
+            // default or disable animation
             {
-                var transition = layer.stateMachine.AddEntryTransition(defaultState);
-                transition.AddCondition(AnimatorConditionMode.Less, Ctx.MinIndex, Ctx.ClosetId);
-            }
-            {
-                var transition = layer.stateMachine.AddEntryTransition(defaultState);
-                transition.AddCondition(AnimatorConditionMode.Greater, Ctx.MaxIndex, Ctx.ClosetId);
-            }
-            {
-                var transition = defaultState.AddExitTransition();
-                SetupTransition(transition);
-                transition.AddCondition(AnimatorConditionMode.Greater, Ctx.MinIndex - 1, Ctx.ClosetId);
-                transition.AddCondition(AnimatorConditionMode.Less, Ctx.MaxIndex + 1, Ctx.ClosetId);
+                var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 0));
+                defaultState.motion = defaultNode != null ? clips[defaultNode] : disableAllClip;
+                layer.stateMachine.defaultState = defaultState;
             }
 
             var position = new Vector3(0, 50);
-            var yGab = new Vector3(0, 50);
+            var gab = new Vector3(0, 50);
 
-            // Enabled animations
-            foreach (var item in clips.Keys)
+            // enabled animations
+            foreach (var child in node.Children)
             {
-                var enabledClip = clips[item];
-                var state = layer.stateMachine.AddState(item.ItemName, position);
+                var enabledClip = clips[child];
+                var state = layer.stateMachine.AddState(child.Value.Name, position);
                 state.motion = enabledClip;
 
-                // setup entry
-                var entryTransition = layer.stateMachine.AddEntryTransition(state);
-                entryTransition.AddCondition(AnimatorConditionMode.Equals, Ctx.ItemIndex(item), Ctx.ClosetId);
-                // setup exit
+                var enabledTransition = layer.stateMachine.AddAnyStateTransition(state);
+                SetupTransition(enabledTransition);
+                Debug.Log(child.ParameterName);
+                enabledTransition.AddCondition(AnimatorConditionMode.Equals, child.Index, child.ParameterName);
+
                 var exitTransition = state.AddExitTransition();
                 SetupTransition(exitTransition);
-                exitTransition.AddCondition(AnimatorConditionMode.NotEqual, Ctx.ItemIndex(item), Ctx.ClosetId);
+                exitTransition.AddCondition(AnimatorConditionMode.NotEqual, child.Index, child.ParameterName);
 
-                position += yGab;
+                position += gab;
             }
 
             layer.stateMachine.exitPosition = new Vector3(400, 0);
-
-            var path = AssetUtil.GetPath($"Controllers/{Ctx.ClosetId}.controller");
+            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
             AssetDatabase.CreateAsset(controller, path);
             return controller;
         }
