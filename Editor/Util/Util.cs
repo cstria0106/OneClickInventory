@@ -1,4 +1,5 @@
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 namespace dog.miruku.ndcloset
 {
@@ -8,5 +9,14 @@ namespace dog.miruku.ndcloset
         {
             return o.GetComponent<T>() ?? o.AddComponent<T>();
         }
+
+        public static VRCAvatarDescriptor FindAvatar(Transform t)
+        {
+            if (t == null) return null;
+            if (t.TryGetComponent<VRCAvatarDescriptor>(out var descriptor)) return descriptor;
+            return FindAvatar(t.parent);
+        }
+
+        public static bool IsInAvatar(VRCAvatarDescriptor avatar, Transform t) => FindAvatar(t) == avatar;
     }
 }

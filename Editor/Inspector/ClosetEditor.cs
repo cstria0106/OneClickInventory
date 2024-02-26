@@ -134,17 +134,9 @@ namespace dog.miruku.ndcloset
             }
         }
 
-        private static VRCAvatarDescriptor FindAvatar(Transform t)
-        {
-            if (t == null) return null;
-            if (t.TryGetComponent<VRCAvatarDescriptor>(out var descriptor)) return descriptor;
-            return FindAvatar(t.parent);
-        }
-
-
         public override void OnInspectorGUI()
         {
-            var avatar = FindAvatar(Closet.transform.parent);
+            var avatar = Util.FindAvatar(Closet.transform.parent);
             if (avatar == null)
             {
                 EditorGUILayout.HelpBox(Localization.Get("noAvatar"), MessageType.Warning);

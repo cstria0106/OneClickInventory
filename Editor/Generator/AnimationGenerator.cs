@@ -46,7 +46,7 @@ namespace dog.miruku.ndcloset
 
         private static string GetRelativePath(Transform o, Transform ancestor, string path)
         {
-            if (o == null) throw new System.Exception("Invalid ancestor");
+            if (o == null) throw new Exception("Invalid ancestor");
             if (o == ancestor) return path;
 
             return GetRelativePath(o.parent, ancestor, $"{o.name}/{path}");
@@ -71,7 +71,7 @@ namespace dog.miruku.ndcloset
             if (enabledObjects != null)
             {
                 var enabledKeys = new Keyframe[1] { new Keyframe(0.0f, 1f) };
-                foreach (var e in enabledObjects)
+                foreach (var e in enabledObjects.Where(e => Util.IsInAvatar(avatar, e.transform)))
                 {
                     var curve = new AnimationCurve(enabledKeys);
                     clip.SetCurve(GetRelativePath(e.transform, avatar.transform), typeof(GameObject), "m_IsActive", curve);
@@ -81,7 +81,7 @@ namespace dog.miruku.ndcloset
             if (disabledObjects != null)
             {
                 var disabledKeys = new Keyframe[1] { new Keyframe(0.0f, 0f) };
-                foreach (var e in disabledObjects)
+                foreach (var e in disabledObjects.Where(e => Util.IsInAvatar(avatar, e.transform)))
                 {
                     var curve = new AnimationCurve(disabledKeys);
                     clip.SetCurve(GetRelativePath(e.transform, avatar.transform), typeof(GameObject), "m_IsActive", curve);
@@ -89,7 +89,7 @@ namespace dog.miruku.ndcloset
             }
 
             if (setBlendShapes != null)
-                foreach (var e in setBlendShapes)
+                foreach (var e in setBlendShapes.Where(e => Util.IsInAvatar(avatar, e.renderer.transform)))
                 {
                     var curve = new AnimationCurve();
                     curve.AddKey(0, e.value);
@@ -97,7 +97,7 @@ namespace dog.miruku.ndcloset
                 }
 
             if (setMaterials != null)
-                foreach (var e in setMaterials)
+                foreach (var e in setMaterials.Where(e => Util.IsInAvatar(avatar, e.renderer.transform)))
                 {
                     var objectPath = GetRelativePath(e.renderer.transform, avatar.transform);
                     var indexes = e.renderer.sharedMaterials.Where(m => m == e.from).Select((m, i) => i).ToList();
@@ -185,14 +185,11 @@ namespace dog.miruku.ndcloset
 
         private static AnimatorController GenerateNonUniqueAnimatorController(ClosetNode node, AnimationClip enabledClip, AnimationClip disabledClip)
         {
-            var controller = new AnimatorController();
-            var layer = new AnimatorControllerLayer
-            {
-                stateMachine = new AnimatorStateMachine(),
-                name = node.Value.Name
-            };
-
-            controller.AddLayer(layer);
+            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
+            var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
+            controller.RemoveLayer(0);
+            controller.AddLayer(node.Key);
+            var layer = controller.layers[0];
             controller.AddParameter(node.ParameterName, AnimatorControllerParameterType.Bool);
 
             layer.stateMachine.defaultState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
@@ -217,8 +214,9 @@ namespace dog.miruku.ndcloset
                 SetupTransition(transition);
                 transition.AddCondition(AnimatorConditionMode.IfNot, 0, node.ParameterName);
             }
-            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
-            AssetDatabase.CreateAsset(controller, path);
+
+            EditorUtility.SetDirty(controller);
+            AssetDatabase.SaveAssets();
             return controller;
         }
 
@@ -231,15 +229,11 @@ namespace dog.miruku.ndcloset
 
         private static AnimatorController GenerateUniqueAnimatorController(ClosetNode node, Dictionary<ClosetNode, AnimationClip> clips, AnimationClip disableAllClip)
         {
-            var defaultNode = node.Children.FirstOrDefault(e => e.Value.Default);
-            var controller = new AnimatorController();
-            var layer = new AnimatorControllerLayer
-            {
-                stateMachine = new AnimatorStateMachine(),
-                name = node.Key
-            };
-
-            controller.AddLayer(layer);
+            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
+            var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
+            controller.RemoveLayer(0);
+            controller.AddLayer(node.Key);
+            var layer = controller.layers[0];
             controller.AddParameter(node.UniqueKey, AnimatorControllerParameterType.Int);
 
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
@@ -247,6 +241,7 @@ namespace dog.miruku.ndcloset
 
             // default or disable animation
             {
+                var defaultNode = node.Children.FirstOrDefault(e => e.Value.Default);
                 var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 0));
                 defaultState.motion = defaultNode != null ? clips[defaultNode] : disableAllClip;
                 layer.stateMachine.defaultState = defaultState;
@@ -264,7 +259,6 @@ namespace dog.miruku.ndcloset
 
                 var enabledTransition = layer.stateMachine.AddAnyStateTransition(state);
                 SetupTransition(enabledTransition);
-                Debug.Log(child.ParameterName);
                 enabledTransition.AddCondition(AnimatorConditionMode.Equals, child.Index, child.ParameterName);
 
                 var exitTransition = state.AddExitTransition();
@@ -275,8 +269,9 @@ namespace dog.miruku.ndcloset
             }
 
             layer.stateMachine.exitPosition = new Vector3(400, 0);
-            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
-            AssetDatabase.CreateAsset(controller, path);
+
+            EditorUtility.SetDirty(controller);
+            AssetDatabase.SaveAssets();
             return controller;
         }
     }

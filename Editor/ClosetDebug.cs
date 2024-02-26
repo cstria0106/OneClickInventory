@@ -1,4 +1,5 @@
 ﻿
+using System;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
@@ -41,8 +42,9 @@ namespace dog.miruku.ndcloset
             {
                 Generator.Generate(cloned.GetComponent<VRCAvatarDescriptor>());
             }
-            catch
+            catch (Exception e)
             {
+                Debug.LogError(e);
                 GameObject.DestroyImmediate(cloned);
             }
         }
