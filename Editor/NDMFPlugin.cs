@@ -29,8 +29,6 @@ namespace dog.miruku.ndcloset
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .Run("Generating closet", ctx =>
             {
-
-                AssetUtil.ClearGeneratedAssets();
                 Generator.Generate(ctx.AvatarDescriptor);
             });
         }
