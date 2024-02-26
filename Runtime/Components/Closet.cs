@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
 namespace dog.miruku.ndcloset.runtime
@@ -15,11 +16,17 @@ namespace dog.miruku.ndcloset.runtime
     }
 
     [Serializable]
-    public class ReplaceMaterialBinding
+    public struct ReplaceMaterialBinding
     {
         public Renderer renderer;
         public Material from;
         public Material to;
+    }
+
+    [Serializable]
+    public struct ParameterDriverBinding
+    {
+        public VRC_AvatarParameterDriver.Parameter parameter;
     }
 
     [AddComponentMenu("Non-Destructive Closet/Closet")]
@@ -55,10 +62,15 @@ namespace dog.miruku.ndcloset.runtime
 
         [SerializeField] private List<GameObject> _objectsToDisable = new List<GameObject>();
         public IEnumerable<GameObject> ObjectsToDisable => _objectsToDisable.Where(e => e != null);
+
         [SerializeField] private List<SetBlendShapeBinding> _blendShapesToChange = new List<SetBlendShapeBinding>();
         public IEnumerable<SetBlendShapeBinding> BlendShapesToChange => _blendShapesToChange.Where(e => e.renderer != null);
+
         [SerializeField] private List<ReplaceMaterialBinding> _materialsToReplace = new List<ReplaceMaterialBinding>();
         public IEnumerable<ReplaceMaterialBinding> MaterialsToReplace => _materialsToReplace.Where(e => e.renderer != null && e.from != null && e.to != null);
+
+        [SerializeField] private List<ParameterDriverBinding> _parameterDriverBindings = new List<ParameterDriverBinding>();
+        public IEnumerable<ParameterDriverBinding> ParameterDriverBindings => _parameterDriverBindings;
 
         private void Reset()
         {

@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 
 namespace dog.miruku.ndcloset
 {
@@ -183,6 +184,14 @@ namespace dog.miruku.ndcloset
             transition.canTransitionToSelf = false;
         }
 
+        private static void SetupParameterDrivers(AnimatorState state, ClosetNode node)
+        {
+            var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+            driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
+            driver.parameters.AddRange(node.Value.ParameterDriverBindings.Select(e => e.parameter));
+        }
+
+        // generate animations for node itself
         private static AnimatorController GenerateNonUniqueAnimatorController(ClosetNode node, AnimationClip enabledClip, AnimationClip disabledClip)
         {
             var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
@@ -207,6 +216,7 @@ namespace dog.miruku.ndcloset
                 var transition = layer.stateMachine.AddAnyStateTransition(enabledState);
                 SetupTransition(transition);
                 transition.AddCondition(AnimatorConditionMode.If, 0, node.ParameterName);
+                SetupParameterDrivers(enabledState, node);
             }
             {
                 disabledState.motion = disabledClip;
@@ -227,6 +237,7 @@ namespace dog.miruku.ndcloset
                     .Select(node => GenerateNonUniqueAnimatorController(node, enabledClips[node], disabledClips[node]))
                     .ToList();
 
+        // generate animations for node.Children
         private static AnimatorController GenerateUniqueAnimatorController(ClosetNode node, Dictionary<ClosetNode, AnimationClip> clips, AnimationClip disableAllClip)
         {
             var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
@@ -243,15 +254,22 @@ namespace dog.miruku.ndcloset
             {
                 var defaultNode = node.Children.FirstOrDefault(e => e.Value.Default);
                 var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 0));
-                defaultState.motion = defaultNode != null ? clips[defaultNode] : disableAllClip;
+                defaultState.motion = disableAllClip;
+                if (defaultNode != null)
+                {
+                    defaultState.name = defaultNode.Value.Name;
+                    defaultState.motion = clips[defaultNode];
+                    SetupParameterDrivers(defaultState, defaultNode);
+                }
+
                 layer.stateMachine.defaultState = defaultState;
             }
 
             var position = new Vector3(0, 50);
             var gab = new Vector3(0, 50);
 
-            // enabled animations
-            foreach (var child in node.Children)
+            // non default animations
+            foreach (var child in node.Children.Where(e => !e.Value.Default))
             {
                 var enabledClip = clips[child];
                 var state = layer.stateMachine.AddState(child.Value.Name, position);
@@ -265,6 +283,7 @@ namespace dog.miruku.ndcloset
                 SetupTransition(exitTransition);
                 exitTransition.AddCondition(AnimatorConditionMode.NotEqual, child.Index, child.ParameterName);
 
+                SetupParameterDrivers(state, child);
                 position += gab;
             }
 

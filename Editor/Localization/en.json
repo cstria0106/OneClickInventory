@@ -17,7 +17,7 @@
   "noCloset": "This object must be in Closet's hierarchy",
   "additionalAnimations": "Additional animations",
   "enableAdditionalObject": "Additional behaviors",
-  "setParameters": "Set parameter",
+  "parameterDrivers": "Parameter drivers",
   "additionalObject": "Enable additional object",
   "disableObject": "Disable object",
   "setBlendShape": "Set blend shape value",

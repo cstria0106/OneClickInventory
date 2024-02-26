@@ -4,6 +4,8 @@ using dog.miruku.ndcloset.runtime;
 using VRC.SDK3.Avatars.Components;
 using System.Linq;
 using UnityEditorInternal;
+using VRC.SDKBase;
+using System;
 
 namespace dog.miruku.ndcloset
 {
@@ -22,9 +24,11 @@ namespace dog.miruku.ndcloset
         private SerializedProperty ObjectsToDisable { get; set; }
         private SerializedProperty BlendShapesToChange { get; set; }
         private SerializedProperty MaterialsToReplace { get; set; }
+        private SerializedProperty ParameterDriverBindings { get; set; }
 
         private ReorderableList _blendShapesToChangeList;
         private ReorderableList _materialsToReplaceList;
+        private ReorderableList _parameterDriverBindingsList;
 
         private static bool _showItems = false;
         private static ClosetEditorUtil.AvatarHierarchyFolding _avatarHierarchyFolding = new ClosetEditorUtil.AvatarHierarchyFolding();
@@ -113,6 +117,48 @@ namespace dog.miruku.ndcloset
                         EditorGUI.PropertyField(new Rect(toX, rect.y, width, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("to"), GUIContent.none);
                     },
             };
+
+            // WIP
+            // TODO: implement parameter driver editor
+            ParameterDriverBindings = serializedObject.FindProperty("_parameterDriverBindings");
+            _parameterDriverBindingsList = new ReorderableList(serializedObject, ParameterDriverBindings, true, true, true, true)
+            {
+                drawHeaderCallback = (rect) => { },
+                drawElementCallback = (rect, index, isActive, isFocused) =>
+                {
+                    var element = ParameterDriverBindings.GetArrayElementAtIndex(index);
+                    var originalLabelWidth = EditorGUIUtility.labelWidth;
+                    EditorGUIUtility.labelWidth = 50;
+
+                    var typeProperty = element.FindPropertyRelative("parameter.type");
+                    var typeRect = new Rect(rect.x, rect.y, rect.width / 2, EditorGUIUtility.singleLineHeight);
+                    EditorGUI.PropertyField(typeRect, typeProperty, new GUIContent("Type"));
+                    var type = (VRC_AvatarParameterDriver.ChangeType)typeProperty.enumValueIndex;
+
+                    var parameterProperty = element.FindPropertyRelative("parameter.name");
+                    var parameterRect = new Rect(rect.x + rect.width / 2, rect.y, rect.width / 2, EditorGUIUtility.singleLineHeight);
+                    EditorGUI.PropertyField(parameterRect, parameterProperty, new GUIContent("Parameter"));
+
+                    EditorGUIUtility.labelWidth = originalLabelWidth;
+                },
+                elementHeightCallback = (index) =>
+                {
+                    var element = _parameterDriverBindingsList.serializedProperty.GetArrayElementAtIndex(index);
+                    var type = element.FindPropertyRelative("parameter.type").enumValueIndex;
+                    switch ((VRC_AvatarParameterDriver.ChangeType)type)
+                    {
+                        case VRC_AvatarParameterDriver.ChangeType.Set:
+                            return EditorGUIUtility.singleLineHeight * 2;
+                        case VRC_AvatarParameterDriver.ChangeType.Add:
+                            return EditorGUIUtility.singleLineHeight * 3;
+                        case VRC_AvatarParameterDriver.ChangeType.Random:
+                            return EditorGUIUtility.singleLineHeight * 3;
+                        case VRC_AvatarParameterDriver.ChangeType.Copy:
+                            return EditorGUIUtility.singleLineHeight * 3;
+                    }
+                    return EditorGUIUtility.singleLineHeight;
+                }
+            };
         }
 
         private static void DrawIconOnWindowItem(int instanceID, Rect rect)
@@ -196,6 +242,15 @@ namespace dog.miruku.ndcloset
                 if (BlendShapesToChange.isExpanded) _blendShapesToChangeList.DoLayoutList();
                 MaterialsToReplace.isExpanded = EditorGUILayout.Foldout(MaterialsToReplace.isExpanded, Localization.Get("replaceMaterial"));
                 if (MaterialsToReplace.isExpanded) _materialsToReplaceList.DoLayoutList();
+
+                // TODO: implement parameter driver editor
+                if (false)
+                {
+                    ParameterDriverBindings.isExpanded = EditorGUILayout.Foldout(ParameterDriverBindings.isExpanded, Localization.Get("parameterDrivers"));
+                    if (ParameterDriverBindings.isExpanded) _parameterDriverBindingsList.DoLayoutList();
+                }
+                EditorGUILayout.PropertyField(ParameterDriverBindings, new GUIContent(Localization.Get("parameterDrivers") + " (WIP)"));
+
                 EditorGUILayout.PropertyField(AdditionalAnimations, new GUIContent(Localization.Get("additionalAnimations")));
             }
 
