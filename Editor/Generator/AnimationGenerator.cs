@@ -240,12 +240,12 @@ namespace dog.miruku.ndcloset
         // generate animations for node.Children
         private static AnimatorController GenerateUniqueAnimatorController(ClosetNode node, Dictionary<ClosetNode, AnimationClip> clips, AnimationClip disableAllClip)
         {
-            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
+            var path = AssetUtil.GetPath($"Controllers/{node.Key}_select.controller");
             var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
             controller.RemoveLayer(0);
             controller.AddLayer(node.Key);
             var layer = controller.layers[0];
-            controller.AddParameter(node.UniqueKey, AnimatorControllerParameterType.Int);
+            controller.AddParameter(node.IndexKey, AnimatorControllerParameterType.Int);
 
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);

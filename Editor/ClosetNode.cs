@@ -29,9 +29,9 @@ namespace dog.miruku.ndcloset
         public bool ParentIsUnique => Parent != null && Parent.Value.IsUnique;
         public ClosetNode DefaultChild => Value.IsUnique ? Children.Where(e => e.Value.Default).FirstOrDefault() : null;
 
-        public string UniqueKey => Key;
+        public string IndexKey => Key + "_index";
         public bool ParameterIsIndex => ParentIsUnique;
-        public string ParameterName => Parent == null ? null : ParameterIsIndex ? Parent.UniqueKey : Key;
+        public string ParameterName => Parent == null ? null : ParameterIsIndex ? Parent.IndexKey : Key;
         public int ParameterIntValue => ParameterIsIndex ? Index : 1;
         public int ParameterDefaultValue => ParameterIsIndex ? 0 : Value.Default ? 1 : 0;
 
