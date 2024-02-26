@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using dog.miruku.ndcloset.runtime;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -59,26 +60,67 @@ namespace dog.miruku.ndcloset
         private static AnimationClip GenerateAnimationClip(
             string key,
             VRCAvatarDescriptor avatar,
-            IEnumerable<GameObject> enabledObjects,
-            IEnumerable<GameObject> disabledObjects,
-            IEnumerable<AnimationClip> additionalAnimations
+            IEnumerable<GameObject> enabledObjects = null,
+            IEnumerable<GameObject> disabledObjects = null,
+            IEnumerable<AnimationClip> additionalAnimations = null,
+            IEnumerable<SetBlendShapeBinding> setBlendShapes = null,
+            IEnumerable<ReplaceMaterialBinding> setMaterials = null
         )
         {
             var clip = new AnimationClip();
-            var enabledKeys = new Keyframe[1] { new Keyframe(0.0f, 1f) };
-            var disabledKeys = new Keyframe[1] { new Keyframe(0.0f, 0f) };
-            foreach (var o in enabledObjects)
+            if (enabledObjects != null)
             {
-                clip.SetCurve(GetRelativePath(o.transform, avatar.transform), typeof(GameObject), "m_IsActive", new AnimationCurve(enabledKeys));
+                var enabledKeys = new Keyframe[1] { new Keyframe(0.0f, 1f) };
+                foreach (var e in enabledObjects)
+                {
+                    var curve = new AnimationCurve(enabledKeys);
+                    clip.SetCurve(GetRelativePath(e.transform, avatar.transform), typeof(GameObject), "m_IsActive", curve);
+                }
             }
-            foreach (var o in disabledObjects)
+
+            if (disabledObjects != null)
             {
-                clip.SetCurve(GetRelativePath(o.transform, avatar.transform), typeof(GameObject), "m_IsActive", new AnimationCurve(disabledKeys));
+                var disabledKeys = new Keyframe[1] { new Keyframe(0.0f, 0f) };
+                foreach (var e in disabledObjects)
+                {
+                    var curve = new AnimationCurve(disabledKeys);
+                    clip.SetCurve(GetRelativePath(e.transform, avatar.transform), typeof(GameObject), "m_IsActive", curve);
+                }
             }
-            foreach (var c in additionalAnimations)
-            {
-                CopyAnimationClip(c, clip);
-            }
+
+            if (setBlendShapes != null)
+                foreach (var e in setBlendShapes)
+                {
+                    var curve = new AnimationCurve();
+                    curve.AddKey(0, e.value);
+                    clip.SetCurve(GetRelativePath(e.renderer.transform, avatar.transform), typeof(SkinnedMeshRenderer), $"blendShape.{e.name}", curve);
+                }
+
+            if (setMaterials != null)
+                foreach (var e in setMaterials)
+                {
+                    var objectPath = GetRelativePath(e.renderer.transform, avatar.transform);
+                    var indexes = e.renderer.sharedMaterials.Where(m => m == e.from).Select((m, i) => i).ToList();
+                    var rendererType = e.renderer is SkinnedMeshRenderer ? typeof(SkinnedMeshRenderer)
+                                                : e.renderer is MeshRenderer ? typeof(MeshRenderer) : null;
+                    foreach (var i in indexes)
+                    {
+                        var keyframe = new ObjectReferenceKeyframe()
+                        {
+                            time = 0,
+                            value = e.to
+                        };
+                        var property = $"m_Materials.Array.data[{i}]";
+                        var curve = EditorCurveBinding.PPtrCurve(objectPath, rendererType, property);
+                        AnimationUtility.SetObjectReferenceCurve(clip, curve, new ObjectReferenceKeyframe[] { keyframe });
+                    }
+                }
+
+            if (additionalAnimations != null)
+                foreach (var e in additionalAnimations)
+                {
+                    CopyAnimationClip(e, clip);
+                }
 
             var path = AssetUtil.GetPath($"Animations/{key}.anim");
             AssetDatabase.CreateAsset(clip, path);
@@ -93,8 +135,8 @@ namespace dog.miruku.ndcloset
 
             foreach (var child in node.Children)
             {
-                enabledClips.Add(child, GenerateAnimationClip($"{child.Key}_enabled", child.Avatar, child.Value.GameObjects, Enumerable.Empty<GameObject>(), child.Value.AdditionalAnimations));
-                disabledClips.Add(child, GenerateAnimationClip($"{child.Key}_disabled", child.Avatar, new GameObject[] { }, child.Value.GameObjects, Enumerable.Empty<AnimationClip>()));
+                enabledClips.Add(child, GenerateAnimationClip($"{child.Key}_enabled", child.Avatar, child.Value.GameObjects, child.Value.ObjectsToDisable, child.Value.AdditionalAnimations));
+                disabledClips.Add(child, GenerateAnimationClip($"{child.Key}_disabled", child.Avatar, new GameObject[] { }, child.Value.GameObjects));
             }
 
             return (enabledClips, disabledClips);
@@ -108,7 +150,7 @@ namespace dog.miruku.ndcloset
                 child => (
                     child,
                     enabled: child.Value.GameObjects.ToList(),
-                    disabled: allObjects.Where(o => !child.Value.GameObjects.Contains(o)).ToList()
+                    disabled: allObjects.Where(o => !child.Value.GameObjects.Contains(o)).Concat(child.Value.ObjectsToDisable).ToList()
                 )
             ).ToDictionary(
                 e => e.child,
@@ -118,7 +160,7 @@ namespace dog.miruku.ndcloset
             // generate enabled clips
             var clips = groups.ToDictionary(
                 e => e.Key,
-                e => GenerateAnimationClip(e.Key.Key, e.Key.Avatar, e.Value.enabled, e.Value.disabled, e.Key.Value.AdditionalAnimations)
+                e => GenerateAnimationClip(e.Key.Key, e.Key.Avatar, e.Value.enabled, e.Value.disabled, e.Key.Value.AdditionalAnimations, e.Key.Value.BlendShapesToChange, e.Key.Value.MaterialsToReplace)
             );
 
             // generate disable all clips
