@@ -1,3 +1,3 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("dog.miruku.ndcloset.editor")]
+[assembly: InternalsVisibleTo("dog.miruku.inventory")]

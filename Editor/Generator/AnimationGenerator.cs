@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using dog.miruku.ndcloset.runtime;
+using dog.miruku.inventory.runtime;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
     public class AnimationGenerator
     {
-        public static IEnumerable<AnimatorController> GenerateControllers(ClosetNode node)
+        public static IEnumerable<AnimatorController> GenerateControllers(InventoryNode node)
         {
             List<AnimatorController> controllers;
             if (node.Value.IsUnique)
@@ -129,10 +129,10 @@ namespace dog.miruku.ndcloset
         }
 
 
-        private static (Dictionary<ClosetNode, AnimationClip>, Dictionary<ClosetNode, AnimationClip>) GenerateNonUniqueClips(ClosetNode node)
+        private static (Dictionary<InventoryNode, AnimationClip>, Dictionary<InventoryNode, AnimationClip>) GenerateNonUniqueClips(InventoryNode node)
         {
-            var enabledClips = new Dictionary<ClosetNode, AnimationClip>();
-            var disabledClips = new Dictionary<ClosetNode, AnimationClip>();
+            var enabledClips = new Dictionary<InventoryNode, AnimationClip>();
+            var disabledClips = new Dictionary<InventoryNode, AnimationClip>();
 
             foreach (var child in node.Children)
             {
@@ -144,7 +144,7 @@ namespace dog.miruku.ndcloset
         }
 
 
-        private static (Dictionary<ClosetNode, AnimationClip>, AnimationClip) GenerateUniqueClips(ClosetNode node)
+        private static (Dictionary<InventoryNode, AnimationClip>, AnimationClip) GenerateUniqueClips(InventoryNode node)
         {
             var allObjects = node.Children.SelectMany(child => child.Value.GameObjects).ToImmutableHashSet();
             var groups = node.Children.Select(
@@ -184,7 +184,7 @@ namespace dog.miruku.ndcloset
             transition.canTransitionToSelf = false;
         }
 
-        private static void SetupParameterDrivers(AnimatorState state, ClosetNode node)
+        private static void SetupParameterDrivers(AnimatorState state, InventoryNode node)
         {
             var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
@@ -192,7 +192,7 @@ namespace dog.miruku.ndcloset
         }
 
         // generate animations for node itself
-        private static AnimatorController GenerateNonUniqueAnimatorController(ClosetNode node, AnimationClip enabledClip, AnimationClip disabledClip)
+        private static AnimatorController GenerateNonUniqueAnimatorController(InventoryNode node, AnimationClip enabledClip, AnimationClip disabledClip)
         {
             var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
             var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
@@ -231,14 +231,14 @@ namespace dog.miruku.ndcloset
         }
 
         private static List<AnimatorController> GenerateNonUniqueAnimatorControllers(
-            Dictionary<ClosetNode, AnimationClip> enabledClips,
-            Dictionary<ClosetNode, AnimationClip> disabledClips
+            Dictionary<InventoryNode, AnimationClip> enabledClips,
+            Dictionary<InventoryNode, AnimationClip> disabledClips
         ) => enabledClips.Keys
                     .Select(node => GenerateNonUniqueAnimatorController(node, enabledClips[node], disabledClips[node]))
                     .ToList();
 
         // generate animations for node.Children
-        private static AnimatorController GenerateUniqueAnimatorController(ClosetNode node, Dictionary<ClosetNode, AnimationClip> clips, AnimationClip disableAllClip)
+        private static AnimatorController GenerateUniqueAnimatorController(InventoryNode node, Dictionary<InventoryNode, AnimationClip> clips, AnimationClip disableAllClip)
         {
             var path = AssetUtil.GetPath($"Controllers/{node.Key}_select.controller");
             var controller = AnimatorController.CreateAnimatorControllerAtPath(path);

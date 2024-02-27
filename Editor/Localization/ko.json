@@ -1,12 +1,12 @@
 {
   "language": "언어",
-  "closet": "옷장",
+  "inventory": "인벤토리",
   "item": "아이템",
   "customMenuName": "메뉴 이름",
   "customMenuIcon": "메뉴 아이콘",
   "isUnique": "하나의 아이템만 활성화",
   "name": "이름",
-  "defaultUnique": "옷장의 기본 아이템으로 설정",
+  "defaultUnique": "인벤토리의 기본 아이템으로 설정",
   "default": "기본적으로 활성화",
   "defaultItem": "기본 아이템",
   "items": "아이템",
@@ -14,7 +14,6 @@
   "customIcon": "아이콘",
   "generateIcon": "아이콘 생성",
   "noAvatar": "객체가 아바타 안에 있어야 합니다",
-  "noCloset": "객체가 옷장 안에 있어야 합니다",
   "additionalAnimations": "추가 애니메이션",
   "additionalBehaviors": "활성화 시 추가 동작",
   "parameterDrivers": "파라미터 드라이버",
@@ -26,6 +25,6 @@
   "menu": "메뉴",
   "etc": "기타",
   "avatar": "아바타",
-  "avatarHierarchy": "전체 아바타 옷장 구조",
+  "avatarHierarchy": "전체 아바타 인벤토리 구조",
   "usedParameterMemory": "사용하는 파라미터 메모리"
 }

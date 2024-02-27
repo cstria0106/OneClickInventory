@@ -2,7 +2,7 @@
 
 ## 기본 사용법
 
-https://github.com/cstria0106/NonDestructiveCloset/assets/11474150/0f8f1d61-c947-49cd-85a7-ac0e246ed96a
+https://github.com/cstria0106/OneClickInventory/assets/11474150/0f8f1d61-c947-49cd-85a7-ac0e246ed96a
 
 1.  옷 입히기
     아바타에 옷을 입히세요. 모듈러 아바타를 사용해도 되고 손수 입혀도 됩니다.
@@ -23,14 +23,14 @@ https://github.com/cstria0106/NonDestructiveCloset/assets/11474150/0f8f1d61-c947
 │  ├─ 모자
 ```
 
-2. 옷장 설정하기
-   옷장 (옷을 포함한 게임 오브젝트)를 선택하고 Closet 컴포넌트를 추가하세요. 또한 각각의 옷에도 Closet 컴포넌트를 추가하세요. 인스펙터를 통해 메뉴 이름, 아이콘 등의 속성을 설정하세요.
+2. 인벤토리 설정하기
+   인벤토리를 선택하고 Inventory 컴포넌트를 추가하세요. 또한 각각의 아이템에도 Inventory 컴포넌트를 추가하세요. 인스펙터를 통해 메뉴 이름, 아이콘 등의 속성을 설정하세요.
 
 3. 테스트 / 업로드
-   플레이 버튼을 누르거나 VRChat에 업로드하면 자동으로 옷장이 생성됩니다
+   플레이 버튼을 누르거나 VRChat에 업로드하면 자동으로 인벤토리가 생성됩니다
 
 ## 서브메뉴 추가하기
 
-https://github.com/cstria0106/NonDestructiveCloset/assets/11474150/264bd70d-6d17-4341-8122-9b5f3a9c9b7d
+https://github.com/cstria0106/OneClickInventory/assets/11474150/264bd70d-6d17-4341-8122-9b5f3a9c9b7d
 
-Closet 컴포넌트가 있는 게임 오브젝트를 중첩하여 서브 메뉴를 만들 수 있습니다.
+Inventory 컴포넌트가 있는 게임 오브젝트를 중첩하여 서브 메뉴를 만들 수 있습니다.

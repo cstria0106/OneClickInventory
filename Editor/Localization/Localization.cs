@@ -3,7 +3,7 @@ using System.IO;
 using Newtonsoft.Json;
 using UnityEditor;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
     public class Localization
     {
@@ -15,11 +15,11 @@ namespace dog.miruku.ndcloset
         private static string _language = null;
         public static string Language
         {
-            get => _language ?? EditorPrefs.GetString("non-destructive-closet.language", _fallbackLanguage);
+            get => _language ?? EditorPrefs.GetString("one-click-inventory.language", _fallbackLanguage);
             set
             {
                 _language = value;
-                EditorPrefs.SetString("non-destructive-closet.language", _language);
+                EditorPrefs.SetString("one-click-inventory.language", _language);
                 Preload(_language);
             }
         }

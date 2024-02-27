@@ -1,7 +1,7 @@
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
     public class Util
     {

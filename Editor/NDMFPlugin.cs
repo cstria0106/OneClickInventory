@@ -1,10 +1,10 @@
 using nadena.dev.ndmf;
 using UnityEngine;
-using dog.miruku.ndcloset.runtime;
+using dog.miruku.inventory.runtime;
 
-[assembly: ExportsPlugin(typeof(dog.miruku.ndcloset.NDMFPlugin))]
+[assembly: ExportsPlugin(typeof(dog.miruku.inventory.NDMFPlugin))]
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
     public class NDMFPlugin : Plugin<NDMFPlugin>
     {
@@ -18,16 +18,16 @@ namespace dog.miruku.ndcloset
 
         protected override void Configure()
         {
-            InPhase(BuildPhase.Optimizing).Run("Clear closet components", ctx =>
+            InPhase(BuildPhase.Optimizing).Run("Clear inventory components", ctx =>
             {
-                ClearComponents<ClosetAvatarConfig>(ctx.AvatarRootTransform);
-                ClearComponents<Closet>(ctx.AvatarRootTransform);
-                ClearComponents<ClosetItem>(ctx.AvatarRootTransform);
+                ClearComponents<InventoryConfig>(ctx.AvatarRootTransform);
+                ClearComponents<Inventory>(ctx.AvatarRootTransform);
+                ClearComponents<Deprecated>(ctx.AvatarRootTransform);
             });
 
             InPhase(BuildPhase.Generating)
                 .BeforePlugin("nadena.dev.modular-avatar")
-                .Run("Generating closet", ctx =>
+                .Run("Generating inventory", ctx =>
             {
                 Generator.Generate(ctx.AvatarDescriptor);
             });

@@ -1,9 +1,9 @@
 ﻿using System.Linq;
-using dog.miruku.ndcloset.runtime;
+using dog.miruku.inventory.runtime;
 using UnityEditor;
 using UnityEngine;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
     public class IconUtil
     {
@@ -22,7 +22,7 @@ namespace dog.miruku.ndcloset
             return result;
         }
 
-        public static Texture2D Generate(ClosetNode node)
+        public static Texture2D Generate(InventoryNode node)
         {
             var cloned = new GameObject();
             foreach (var o in node.RelatedGameObjects)

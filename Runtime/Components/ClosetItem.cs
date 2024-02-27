@@ -3,10 +3,10 @@ using System.Linq;
 using UnityEngine;
 using VRC.SDKBase;
 
-namespace dog.miruku.ndcloset.runtime
+namespace dog.miruku.inventory.runtime
 {
-    [AddComponentMenu("Non-Destructive Closet/Closet Item")]
-    public class ClosetItem : MonoBehaviour, IEditorOnly
+    [DisallowMultipleComponent]
+    public class Deprecated : MonoBehaviour, IEditorOnly
     {
         [SerializeField] private string _itemName;
         public string Name => _itemName;

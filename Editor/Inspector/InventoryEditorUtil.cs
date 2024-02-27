@@ -1,26 +1,25 @@
 using System.Collections.Generic;
 using System.Linq;
-using dog.miruku.ndcloset.runtime;
+using dog.miruku.inventory.runtime;
 using nadena.dev.ndmf.util;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
-    public class ClosetEditorUtil
+    public class AvatarHierarchyFolding
+    {
+        public bool show = false;
+        public Dictionary<string, bool> nodesShow = new Dictionary<string, bool>();
+    }
+    public class InventoryEditorUtil
     {
         private static int SelectedLanguage { get; set; }
 
         public static GUIStyle HeaderStyle => new GUIStyle(EditorStyles.boldLabel);
 
-        public class AvatarHierarchyFolding
-        {
-            public bool show = false;
-            public Dictionary<string, bool> nodesShow = new Dictionary<string, bool>();
-        }
-
-        private static void AvatarHierarchy(ClosetNode node, int level, AvatarHierarchyFolding folding)
+        private static void AvatarHierarchy(InventoryNode node, int level, AvatarHierarchyFolding folding)
         {
             if (!folding.nodesShow.ContainsKey(node.Key)) folding.nodesShow[node.Key] = false;
             EditorGUILayout.BeginHorizontal();
@@ -30,7 +29,7 @@ namespace dog.miruku.ndcloset
                 folding.nodesShow[node.Key] = EditorGUILayout.BeginFoldoutHeaderGroup(folding.nodesShow[node.Key], GUIContent.none, new GUIStyle(EditorStyles.foldoutHeader) { padding = new RectOffset(0, 0, 0, 0), stretchWidth = false });
             }
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.ObjectField(node.Value, typeof(Closet), true);
+            EditorGUILayout.ObjectField(node.Value, typeof(Inventory), true);
             EditorGUI.EndDisabledGroup();
             if (node.HasChildren)
             {
@@ -48,7 +47,7 @@ namespace dog.miruku.ndcloset
 
         private static void AvatarHierarchy(VRCAvatarDescriptor avatar, AvatarHierarchyFolding folding)
         {
-            var rootNodes = ClosetNode.GetRootNodes(avatar);
+            var rootNodes = InventoryNode.GetRootNodes(avatar);
             foreach (var node in rootNodes)
             {
                 AvatarHierarchy(node, 0, folding);
@@ -66,7 +65,7 @@ namespace dog.miruku.ndcloset
                 AvatarHierarchy(avatar, folding);
             }
 
-            var usedParameterMemory = ClosetNode.GetRootNodes(avatar).Select(e => e.UsedParameterMemory).Sum();
+            var usedParameterMemory = InventoryNode.GetRootNodes(avatar).Select(e => e.UsedParameterMemory).Sum();
             EditorGUILayout.LabelField($"{Localization.Get("usedParameterMemory")} : {usedParameterMemory}");
             EditorGUILayout.Space();
             EditorGUILayout.LabelField(Localization.Get("etc"), HeaderStyle);

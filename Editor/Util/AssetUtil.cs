@@ -27,7 +27,7 @@ public class AssetUtil
 
     public static string GetPersistentPath(string key)
     {
-        var assetPath = $"Assets/Closet/{key}";
+        var assetPath = $"Assets/Inventory/{key}";
         AcquireDirectory(assetPath);
         return assetPath;
     }

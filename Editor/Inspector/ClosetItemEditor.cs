@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEditor;
-using dog.miruku.ndcloset.runtime;
+using dog.miruku.inventory.runtime;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
-    [CustomEditor(typeof(ClosetItem))]
+    [CustomEditor(typeof(Deprecated))]
     [CanEditMultipleObjects]
-    public class ClosetItemEditor : Editor
+    public class DeprecatedEditor : Editor
     {
-        static ClosetItemEditor()
+        static DeprecatedEditor()
         {
             EditorApplication.hierarchyWindowItemOnGUI += DrawIconOnWindowItem;
         }
@@ -23,29 +23,29 @@ namespace dog.miruku.ndcloset
                 return;
             }
 
-            if (gameObject.TryGetComponent<ClosetItem>(out _))
+            if (gameObject.TryGetComponent<Deprecated>(out _))
             {
                 var labelRect = new Rect(rect.xMax - 100, rect.yMin, rect.xMax - rect.width, rect.height);
                 EditorGUI.LabelField(labelRect, "Need convert");
             }
         }
-        private void ConvertToCloset()
+        private void ConvertToInventory()
         {
             // backward compatibility
-            var item = target as ClosetItem;
-            var closet = item.gameObject.AddComponent<Closet>();
-            closet.Name = item.Name;
-            closet.Icon = item.Icon;
-            closet.Default = item.Default;
-            closet.AdditionalObjects = item.AdditionalObjects;
-            closet.AdditionalAnimations = item.AdditionalAnimations;
+            var item = target as Deprecated;
+            var node = item.gameObject.AddComponent<Inventory>();
+            node.Name = item.Name;
+            node.Icon = item.Icon;
+            node.Default = item.Default;
+            node.AdditionalObjects = item.AdditionalObjects;
+            node.AdditionalAnimations = item.AdditionalAnimations;
             DestroyImmediate(item);
         }
 
         public override void OnInspectorGUI()
         {
-            if (GUILayout.Button("Convert to Closet"))
-                ConvertToCloset();
+            if (GUILayout.Button("Convert to Inventory"))
+                ConvertToInventory();
         }
     }
 }

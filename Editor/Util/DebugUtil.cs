@@ -3,35 +3,35 @@ using System;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
-    public class ClosetDebug
+    public class DebugUtil
     {
-        private static string ClosetNodeToString(ClosetNode node, int level = 0)
+        private static string InventoryNodeToString(InventoryNode node, int level = 0)
         {
             var s = "";
             for (int i = 0; i < level; i++) s += "    ";
             s += $"{node.Key}\n";
             foreach (var child in node.Children)
             {
-                s += ClosetNodeToString(child, level + 1);
+                s += InventoryNodeToString(child, level + 1);
             }
             return s;
         }
 
-        private static string AvatarClosetNodeTreeToString(VRCAvatarDescriptor avatar)
+        private static string AvatarInventoryHierarchyToString(VRCAvatarDescriptor avatar)
         {
             var s = "";
-            foreach (var node in ClosetNode.GetRootNodes(avatar))
+            foreach (var node in InventoryNode.GetRootNodes(avatar))
             {
-                s += ClosetNodeToString(node);
+                s += InventoryNodeToString(node);
             }
             return s;
         }
 
-        public static void PrintAvatarClosetNodeTree(VRCAvatarDescriptor avatar)
+        public static void PrintAvatarInventoryHierarchy(VRCAvatarDescriptor avatar)
         {
-            Debug.Log(AvatarClosetNodeTreeToString(avatar));
+            Debug.Log(AvatarInventoryHierarchyToString(avatar));
         }
 
         public static void CloneAndApply(VRCAvatarDescriptor avatar)

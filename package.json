@@ -1,14 +1,14 @@
 {
   "name": "dog.miruku.ndcloset",
-  "displayName": "Non-Destructive Closet",
+  "displayName": "One-Click Inventory",
   "version": "0.2.3",
-  "url": "https://github.com/cstria0106/NonDestructiveCloset",
+  "url": "https://github.com/cstria0106/OneClickInventory",
   "author": {
     "name": "goorm",
     "email": "cstria0106@gmail.com",
     "url": "https://github.com/cstria0106"
   },
-  "description": "Non-destructive closet for VRChat",
+  "description": "Create inventory in VRChat with one click",
   "unity": "2019.4",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "2.0.0"

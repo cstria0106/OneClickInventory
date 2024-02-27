@@ -1,33 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Codice.Client.Common.TreeGrouper;
-using dog.miruku.ndcloset.runtime;
-using UnityEditor;
+using dog.miruku.inventory.runtime;
 using UnityEngine;
-using UnityEngine.UIElements.Experimental;
 using VRC.SDK3.Avatars.Components;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
-    public class ClosetNode
+    public class InventoryNode
     {
         public string Key { get; }
         public int Index { get; }
-        public Closet Value { get; }
+        public Inventory Value { get; }
         public IEnumerable<GameObject> RelatedGameObjects => Value.GameObjects.Concat(Children.SelectMany(e => e.RelatedGameObjects));
 
         public VRCAvatarDescriptor Avatar { get; }
-        public ClosetNode Parent { get; }
-        public IEnumerable<ClosetNode> Children { get; }
+        public InventoryNode Parent { get; }
+        public IEnumerable<InventoryNode> Children { get; }
         public bool HasChildren => Children.Count() > 0;
-        public ClosetNode Root => Parent != null ? Parent.Root : this;
+        public InventoryNode Root => Parent != null ? Parent.Root : this;
         public bool IsRoot => Root == this;
         public bool IsItem => !IsRoot;
-        public bool IsCloset => HasChildren;
+        public bool IsInventory => HasChildren;
         public bool ParentIsUnique => Parent != null && Parent.Value.IsUnique;
-        public ClosetNode DefaultChild => Value.IsUnique ? Children.Where(e => e.Value.Default).FirstOrDefault() : null;
+        public InventoryNode DefaultChild => Value.IsUnique ? Children.Where(e => e.Value.Default).FirstOrDefault() : null;
 
         public string IndexKey => Key + "_index";
         public bool ParameterIsIndex => ParentIsUnique;
@@ -35,9 +30,9 @@ namespace dog.miruku.ndcloset
         public int ParameterIntValue => ParameterIsIndex ? Index : 1;
         public int ParameterDefaultValue => ParameterIsIndex ? 0 : Value.Default ? 1 : 0;
 
-        public ClosetNode(VRCAvatarDescriptor avatar, ClosetNode parent, Closet value, int index)
+        public InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index)
         {
-            Key = parent != null ? $"{parent.Key}_{index}" : $"{avatar.gameObject.name.Replace("_", "__")}_closet_{index}";
+            Key = parent != null ? $"{parent.Key}_{index}" : $"{avatar.gameObject.name.Replace("_", "__")}_inventory_{index}";
             Index = index;
             Value = value;
 
@@ -46,12 +41,12 @@ namespace dog.miruku.ndcloset
             Children = ResolveChildren(value.transform, avatar, this);
         }
 
-        public static List<ClosetNode> GetRootNodes(VRCAvatarDescriptor avatar)
+        public static List<InventoryNode> GetRootNodes(VRCAvatarDescriptor avatar)
         {
             return ResolveChildren(avatar.transform, avatar);
         }
 
-        private static ClosetNode FindNodeByValue(ClosetNode node, Closet value)
+        private static InventoryNode FindNodeByValue(InventoryNode node, Inventory value)
         {
             if (node.Value == value) return node;
             foreach (var child in node.Children)
@@ -62,24 +57,24 @@ namespace dog.miruku.ndcloset
             return null;
         }
 
-        public ClosetNode FindNodeByValue(Closet value) => FindNodeByValue(this, value);
-        public static ClosetNode FindNodeByValue(VRCAvatarDescriptor avatar, Closet value) => GetRootNodes(avatar).Select(e => FindNodeByValue(e, value)).Where(e => e != null).FirstOrDefault();
+        public InventoryNode FindNodeByValue(Inventory value) => FindNodeByValue(this, value);
+        public static InventoryNode FindNodeByValue(VRCAvatarDescriptor avatar, Inventory value) => GetRootNodes(avatar).Select(e => FindNodeByValue(e, value)).Where(e => e != null).FirstOrDefault();
 
-        private static List<ClosetNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar, ClosetNode parent = null, int index = 1)
+        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar, InventoryNode parent = null, int index = 1)
         {
-            var children = new List<ClosetNode>();
+            var children = new List<InventoryNode>();
             if (transform == null) return children;
             foreach (Transform childTransform in transform)
             {
-                if (childTransform.TryGetComponent(out Closet value))
+                if (childTransform.TryGetComponent(out Inventory value))
                 {
                     if (parent != null && parent.Value.IsUnique && value.Default) // Is parent unique and this node is default
                     {
-                        children.Add(new ClosetNode(avatar, parent, value, 0));
+                        children.Add(new InventoryNode(avatar, parent, value, 0));
                     }
                     else
                     {
-                        children.Add(new ClosetNode(avatar, parent, value, index));
+                        children.Add(new InventoryNode(avatar, parent, value, index));
                         index += 1;
                     }
                 }
@@ -110,6 +105,6 @@ namespace dog.miruku.ndcloset
             }
         }
 
-        public int UsedParameterMemory => (IsCloset ? Value.IsUnique ? 8 : Children.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
+        public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? 8 : Children.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
     }
 }

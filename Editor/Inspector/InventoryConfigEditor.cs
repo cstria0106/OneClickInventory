@@ -1,38 +1,46 @@
 using UnityEngine;
 using UnityEditor;
-using dog.miruku.ndcloset.runtime;
+using dog.miruku.inventory.runtime;
 using VRC.SDK3.Avatars.Components;
 
-namespace dog.miruku.ndcloset
+namespace dog.miruku.inventory
 {
-    [CustomEditor(typeof(ClosetAvatarConfig))]
+    [CustomEditor(typeof(InventoryConfig))]
     [CanEditMultipleObjects]
-    public class ClosetAvatarConfigEditor : Editor
+    public class InventoryConfigEditor : Editor
     {
         private SerializedProperty _customMenuNameProperty;
         private SerializedProperty _customIconProperty;
-        private ClosetEditorUtil.AvatarHierarchyFolding _avatarHierarchyFolding;
+        private AvatarHierarchyFolding _avatarHierarchyFolding;
 
         public void OnEnable()
         {
+            var inventoryConfig = target as InventoryConfig;
+            if (!inventoryConfig.TryGetComponent<VRCAvatarDescriptor>(out _))
+            {
+                EditorUtility.DisplayDialog("Error", "InventoryConfig must be attached to the same GameObject as VRC Avatar Descriptor.", "OK");
+                DestroyImmediate(inventoryConfig);
+                return;
+            }
+
             _customMenuNameProperty = serializedObject.FindProperty("_customMenuName");
             _customIconProperty = serializedObject.FindProperty("_customIcon");
 
-            _avatarHierarchyFolding = new ClosetEditorUtil.AvatarHierarchyFolding();
+            _avatarHierarchyFolding = new AvatarHierarchyFolding();
         }
 
         public override void OnInspectorGUI()
         {
-            var avatar = (target as ClosetAvatarConfig).GetComponent<VRCAvatarDescriptor>();
+            var avatar = (target as InventoryConfig).GetComponent<VRCAvatarDescriptor>();
             serializedObject.Update();
-            ClosetEditorUtil.Footer(avatar, _avatarHierarchyFolding);
             EditorGUILayout.PropertyField(_customMenuNameProperty, new GUIContent(Localization.Get("customMenuName")));
             EditorGUILayout.PropertyField(_customIconProperty, new GUIContent(Localization.Get("customMenuIcon")));
 
             if (GUILayout.Button("Clone and apply for test"))
             {
-                ClosetDebug.CloneAndApply(avatar);
+                DebugUtil.CloneAndApply(avatar);
             }
+            InventoryEditorUtil.Footer(avatar, _avatarHierarchyFolding);
             serializedObject.ApplyModifiedProperties();
         }
     }

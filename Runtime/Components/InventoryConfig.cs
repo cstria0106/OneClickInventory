@@ -1,10 +1,12 @@
+using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase;
 
-namespace dog.miruku.ndcloset.runtime
+namespace dog.miruku.inventory.runtime
 {
-    [AddComponentMenu("Non-Destructive Closet/Closet Avatar Config")]
-    public class ClosetAvatarConfig : MonoBehaviour, IEditorOnly
+    [DisallowMultipleComponent]
+    [AddComponentMenu("One-Click Inventory/Inventory Config")]
+    public class InventoryConfig : MonoBehaviour, IEditorOnly
     {
         [SerializeField] private string _customMenuName;
         public string CustomMenuName { get => _customMenuName; }
@@ -13,7 +15,7 @@ namespace dog.miruku.ndcloset.runtime
 
         private void Reset()
         {
-            _customMenuName = "Closet";
+            _customMenuName = "Inventory";
         }
     }
 }

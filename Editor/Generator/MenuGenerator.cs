@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using dog.miruku.ndcloset;
-using dog.miruku.ndcloset.runtime;
+using dog.miruku.inventory;
 using nadena.dev.modular_avatar.core;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -49,9 +47,9 @@ public class MenuGenerator
         return menu;
     }
 
-    private static void CreateMAMenu(ClosetNode node, Transform parent)
+    private static void CreateMAMenu(InventoryNode node, Transform parent)
     {
-        if (node.IsCloset)
+        if (node.IsInventory)
         {
             var submenu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
             if (node.Parent != null) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterIntValue, submenu.transform);
@@ -66,7 +64,7 @@ public class MenuGenerator
         }
     }
 
-    private static Dictionary<string, ParameterConfig> GetMAParameterConfigs(ClosetNode node, Dictionary<string, ParameterConfig> configs = null)
+    private static Dictionary<string, ParameterConfig> GetMAParameterConfigs(InventoryNode node, Dictionary<string, ParameterConfig> configs = null)
     {
         if (configs == null) configs = new Dictionary<string, ParameterConfig>();
 
@@ -88,14 +86,14 @@ public class MenuGenerator
         return configs;
     }
 
-    private static void CreateMAParameters(ClosetNode node)
+    private static void CreateMAParameters(InventoryNode node)
     {
         var parameters = node.Value.gameObject.AddComponent<ModularAvatarParameters>();
         var configs = GetMAParameterConfigs(node);
         parameters.parameters = configs.Values.ToList();
     }
 
-    private static void CreateMAMergeAnimator(ClosetNode node, IEnumerable<AnimatorController> controllers)
+    private static void CreateMAMergeAnimator(InventoryNode node, IEnumerable<AnimatorController> controllers)
     {
         // Add merge animator
         foreach (var controller in controllers)
@@ -109,7 +107,7 @@ public class MenuGenerator
         }
     }
 
-    public static void Generate(ClosetNode node, IEnumerable<AnimatorController> controllers, Transform menuParent)
+    public static void Generate(InventoryNode node, IEnumerable<AnimatorController> controllers, Transform menuParent)
     {
         CreateMAMergeAnimator(node, controllers);
         CreateMAParameters(node);
