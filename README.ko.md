@@ -26,3 +26,8 @@
 - https://www.flaticon.com/free-icons/fashion
 
 그 외의 파일은 MIT License가 적용됩니다.
+
+### 제작자 / 기여자
+[goorm (cstria0106)](https://github.com/cstria0106)
+
+<img width="128px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/a7913ee7-17ec-4dce-adf0-fed6ef04d0aa"></img>
