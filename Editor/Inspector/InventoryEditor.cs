@@ -236,7 +236,7 @@ namespace dog.miruku.inventory
                 EditorGUILayout.ObjectField(Localization.Get("inventory"), node.Parent.Value, typeof(Inventory), false);
                 EditorGUI.EndDisabledGroup();
                 EditorGUILayout.PropertyField(Default, new GUIContent(node.ParentIsUnique ? Localization.Get("defaultUnique") : Localization.Get("default")));
-                EditorGUILayout.PropertyField(AdditionalObjects, new GUIContent(Localization.Get("enableAdditionalObject")));
+                EditorGUILayout.PropertyField(AdditionalObjects, new GUIContent(Localization.Get("additionalObject")));
                 EditorGUILayout.PropertyField(ObjectsToDisable, new GUIContent(Localization.Get("disableObject")));
                 BlendShapesToChange.isExpanded = EditorGUILayout.Foldout(BlendShapesToChange.isExpanded, Localization.Get("setBlendShape"));
                 if (BlendShapesToChange.isExpanded) _blendShapesToChangeList.DoLayoutList();
