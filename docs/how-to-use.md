@@ -2,7 +2,7 @@
 
 ## Basic usage
 
-1.  Add items to your avatar Add items to your avatar. Use modular avatar or manual way. Organize your hierarchy like,
+1.  Add items to your avatar. Use modular avatar or manual way. Organize your hierarchy like,
 
     ```
     Avatar
