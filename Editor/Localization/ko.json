@@ -25,5 +25,6 @@
   "etc": "기타",
   "avatar": "아바타",
   "avatarHierarchy": "전체 아바타 인벤토리 구조",
-  "usedParameterMemory": "사용하는 파라미터 메모리"
+  "usedParameterMemory": "사용하는 파라미터 메모리",
+  "isNotItem": "아이템으로 설정하지 않음"
 }

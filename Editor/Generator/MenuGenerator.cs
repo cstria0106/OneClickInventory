@@ -52,7 +52,7 @@ public class MenuGenerator
         if (node.IsInventory)
         {
             var submenu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
-            if (node.Parent != null) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterIntValue, submenu.transform);
+            if (node.IsItem) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterIntValue, submenu.transform);
             foreach (var child in node.Children)
             {
                 CreateMAMenu(child, submenu.transform);
@@ -88,7 +88,9 @@ public class MenuGenerator
 
     private static void CreateMAParameters(InventoryNode node)
     {
-        var parameters = node.Value.gameObject.AddComponent<ModularAvatarParameters>();
+        var parametersObject = new GameObject($"{node.Root.Index}_parameters");
+        parametersObject.transform.SetParent(node.Root.Value.transform, false);
+        var parameters = parametersObject.AddComponent<ModularAvatarParameters>();
         var configs = GetMAParameterConfigs(node);
         parameters.parameters = configs.Values.ToList();
     }

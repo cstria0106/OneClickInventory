@@ -76,6 +76,9 @@ namespace dog.miruku.inventory.runtime
         [SerializeField] private List<ParameterDriverBinding> _parameterDriverBindings = new List<ParameterDriverBinding>();
         public IEnumerable<ParameterDriverBinding> ParameterDriverBindings => _parameterDriverBindings;
 
+        [SerializeField] private bool _isNotItem = false;
+        public bool IsNotItem { get => _isNotItem; set => _isNotItem = value; }
+
         private void Reset()
         {
             _name = gameObject.name;

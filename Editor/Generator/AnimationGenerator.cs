@@ -234,6 +234,7 @@ namespace dog.miruku.inventory
             Dictionary<InventoryNode, AnimationClip> enabledClips,
             Dictionary<InventoryNode, AnimationClip> disabledClips
         ) => enabledClips.Keys
+                    .Where(node => node.IsItem)
                     .Select(node => GenerateNonUniqueAnimatorController(node, enabledClips[node], disabledClips[node]))
                     .ToList();
 
@@ -268,8 +269,8 @@ namespace dog.miruku.inventory
             var position = new Vector3(0, 50);
             var gab = new Vector3(0, 50);
 
-            // non default animations
-            foreach (var child in node.Children.Where(e => !e.Value.Default))
+            // non default item animations
+            foreach (var child in node.Children.Where(e => e.IsItem).Where(e => !e.Value.Default))
             {
                 var enabledClip = clips[child];
                 var state = layer.stateMachine.AddState(child.Value.Name, position);

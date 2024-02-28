@@ -19,14 +19,16 @@ namespace dog.miruku.inventory
         public bool HasChildren => Children.Count() > 0;
         public InventoryNode Root => Parent != null ? Parent.Root : this;
         public bool IsRoot => Root == this;
-        public bool IsItem => !IsRoot;
+        public bool IsItem => CanBeItem && !Value.IsNotItem;
+        public bool CanBeItem => !IsRoot;
         public bool IsInventory => HasChildren;
         public bool ParentIsUnique => Parent != null && Parent.Value.IsUnique;
         public InventoryNode DefaultChild => Value.IsUnique ? Children.Where(e => e.Value.Default).FirstOrDefault() : null;
 
         public string IndexKey => Key + "_index";
         public bool ParameterIsIndex => ParentIsUnique;
-        public string ParameterName => Parent == null ? null : ParameterIsIndex ? Parent.IndexKey : Key;
+        public string ParameterName => !IsItem ? null
+                                            : ParameterIsIndex ? Parent.IndexKey : Key;
         public int ParameterIntValue => ParameterIsIndex ? Index : 1;
         public int ParameterDefaultValue => ParameterIsIndex ? 0 : Value.Default ? 1 : 0;
 

@@ -22,6 +22,7 @@ namespace dog.miruku.inventory
         private SerializedProperty AdditionalAnimations { get; set; }
         private SerializedProperty AdditionalObjects { get; set; }
         private SerializedProperty ObjectsToDisable { get; set; }
+        private SerializedProperty IsNotItem { get; set; }
         private SerializedProperty BlendShapesToChange { get; set; }
         private SerializedProperty MaterialsToReplace { get; set; }
         private SerializedProperty ParameterDriverBindings { get; set; }
@@ -49,6 +50,7 @@ namespace dog.miruku.inventory
             AdditionalObjects = serializedObject.FindProperty("_additionalObjects");
             AdditionalAnimations = serializedObject.FindProperty("_additionalAnimations");
             ObjectsToDisable = serializedObject.FindProperty("_objectsToDisable");
+            IsNotItem = serializedObject.FindProperty("_isNotItem");
 
             BlendShapesToChange = serializedObject.FindProperty("_blendShapesToChange");
             _blendShapesToChangeList = new ReorderableList(serializedObject, BlendShapesToChange, true, true, true, true)
@@ -228,10 +230,15 @@ namespace dog.miruku.inventory
                 EditorGUILayout.PropertyField(IsUnique, new GUIContent(Localization.Get("isUnique")));
             }
 
-            if (node.IsItem)
+            if (node.CanBeItem)
             {
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField(Localization.Get("item"), InventoryEditorUtil.HeaderStyle);
+                EditorGUILayout.PropertyField(IsNotItem, new GUIContent(Localization.Get("isNotItem")));
+            }
+
+            if (node.IsItem)
+            {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.ObjectField(Localization.Get("inventory"), node.Parent.Value, typeof(Inventory), false);
                 EditorGUI.EndDisabledGroup();

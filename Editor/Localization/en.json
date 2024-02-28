@@ -25,5 +25,6 @@
   "etc": "Etc",
   "avatar": "Avatar",
   "avatarHierarchy": "Avatar inventory hierarchy",
-  "usedParameterMemory": "Used parameter memory"
+  "usedParameterMemory": "Used parameter memory",
+  "isNotItem": "Set this object as not item"
 }
