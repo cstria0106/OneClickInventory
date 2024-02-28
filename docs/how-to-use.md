@@ -2,11 +2,7 @@
 
 ## Basic usage
 
-https://github.com/cstria0106/OneClickInventory/assets/11474150/0f8f1d61-c947-49cd-85a7-ac0e246ed96a
-
-1.  Dress your avatar
-    Dress your avatar. Use modular avatar or manual way.
-    Organize your hierarchy like,
+1.  Add items to your avatar Add items to your avatar. Use modular avatar or manual way. Organize your hierarchy like,
 
     ```
     Avatar
@@ -25,13 +21,12 @@ https://github.com/cstria0106/OneClickInventory/assets/11474150/0f8f1d61-c947-49
     │  ├─ Hat (Item)
     ```
 
-2.  Setup inventory
-    Select inventory (GameObject that includes items) and add Inventory component. And add Inventory component to each items too. Setup menu name, icon, or some other values in inspector.
-3.  Test / Upload
-    Click play button or upload to VRChat. Inventory animations and menu will be automatically generated.
 
-## Add submenu
-
-https://github.com/cstria0106/OneClickInventory/assets/11474150/264bd70d-6d17-4341-8122-9b5f3a9c9b7d
-
-You can add submenu by nesting GameObject with Inventory component.
+2. Put the "Inventory" component in the item you want to use.
+3. Add the "Inventory" component to the game object containing the item (parent).
+4. Modify the properties of each added component in the inspector.
+    - If multiple items cannot be turned on at the same time such as clothes and hair, check "Enable only one item" of the parent object. If they can be turned on at the same time as accessories, check not.
+    - Set additional objects to be activated/deactivated, blend shapes to be set, materials to be changed, and additional animations as needed in the item object. For example, if the avatar penetrates clothes, it can be solved by adjusting the avatar's Kisekae (Shrink) blend shape.
+    - You can automatically create an icon by pressing "Generate icon" on the item object. Some objects may fail to create icons.
+    - When Inventory is nested, (three or more) submenus are created. For example, it can be used for detail settings for items (some parts toggles, palette swaps).
+5. Play or upload. Inventory animations and menu will be automatically generated.
