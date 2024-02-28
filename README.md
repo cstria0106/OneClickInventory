@@ -26,3 +26,8 @@ Some icon assets are created by Freepik of Flaticon.
 - https://www.flaticon.com/free-icons/fashion
 
 All other files are under MIT License.
+
+### Author / Contributors
+[goorm (cstria0106)](https://github.com/cstria0106)
+
+<img width="128px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/a7913ee7-17ec-4dce-adf0-fed6ef04d0aa"></img>
