@@ -32,12 +32,10 @@ https://github.com/cstria0106/OneClickInventory/assets/11474150/3ec366ef-51f6-4d
 
 ## 아바타나 다른 오브젝트가 옷을 뚫는 경우
 
+https://github.com/cstria0106/OneClickInventory/assets/11474150/6ec4d0b1-b523-4968-a188-55543feae4aa
 
-https://github.com/cstria0106/OneClickInventory/assets/11474150/e6ee500e-7390-4849-a077-474fefce0c41
+## 옷에 따라 액세서리의 매터리얼을 변경하고 싶은 경우
 
+https://github.com/cstria0106/OneClickInventory/assets/11474150/a25c41b2-7d4b-4c07-90a1-a5cc61f96969
 
-## 옷에 따라 액세서리의 색상을 변경하고 싶은 경우
-
-
-https://github.com/cstria0106/OneClickInventory/assets/11474150/246e1c84-b2c3-40bb-b243-fad61974a7a0
 
