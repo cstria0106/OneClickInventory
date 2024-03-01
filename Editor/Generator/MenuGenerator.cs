@@ -106,6 +106,7 @@ public class MenuGenerator
             mergeAnimator.deleteAttachedAnimator = true;
             mergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
             mergeAnimator.matchAvatarWriteDefaults = true;
+            mergeAnimator.layerPriority = node.Value.LayerPriority;
         }
     }
 

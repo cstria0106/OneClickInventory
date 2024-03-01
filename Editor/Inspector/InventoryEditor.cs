@@ -26,6 +26,7 @@ namespace dog.miruku.inventory
         private SerializedProperty BlendShapesToChange { get; set; }
         private SerializedProperty MaterialsToReplace { get; set; }
         private SerializedProperty ParameterDriverBindings { get; set; }
+        private SerializedProperty LayerPriority { get; set; }
 
         private ReorderableList _blendShapesToChangeList;
         private ReorderableList _materialsToReplaceList;
@@ -51,6 +52,7 @@ namespace dog.miruku.inventory
             AdditionalAnimations = serializedObject.FindProperty("_additionalAnimations");
             ObjectsToDisable = serializedObject.FindProperty("_objectsToDisable");
             IsNotItem = serializedObject.FindProperty("_isNotItem");
+            LayerPriority = serializedObject.FindProperty("_layerPriority");
 
             BlendShapesToChange = serializedObject.FindProperty("_blendShapesToChange");
             _blendShapesToChangeList = new ReorderableList(serializedObject, BlendShapesToChange, true, true, true, true)
@@ -259,6 +261,8 @@ namespace dog.miruku.inventory
                 EditorGUILayout.PropertyField(ParameterDriverBindings, new GUIContent(Localization.Get("parameterDrivers") + " (WIP)"));
 
                 EditorGUILayout.PropertyField(AdditionalAnimations, new GUIContent(Localization.Get("additionalAnimations")));
+
+                EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority")));
             }
 
             InventoryEditorUtil.Footer(node.Avatar, _avatarHierarchyFolding);
