@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
-using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
 namespace dog.miruku.inventory.runtime

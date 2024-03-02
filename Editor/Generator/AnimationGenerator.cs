@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using dog.miruku.inventory.runtime;
+using PlasticGui.Configuration.OAuth;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -25,8 +26,8 @@ namespace dog.miruku.inventory
                 }
                 else
                 {
-                    var (enabledClips, disabledClips) = GenerateNonUniqueClips(node);
-                    controllers = GenerateNonUniqueAnimatorControllers(enabledClips, disabledClips);
+                    var clips = GenerateNonUniqueClips(node);
+                    controllers = GenerateNonUniqueAnimatorControllers(clips);
                 }
             }
 
@@ -131,21 +132,19 @@ namespace dog.miruku.inventory
             return clip;
         }
 
-
-        private static (Dictionary<InventoryNode, AnimationClip>, Dictionary<InventoryNode, AnimationClip>) GenerateNonUniqueClips(InventoryNode node)
+        private static Dictionary<InventoryNode, (AnimationClip, AnimationClip)> GenerateNonUniqueClips(InventoryNode node)
         {
-            var enabledClips = new Dictionary<InventoryNode, AnimationClip>();
-            var disabledClips = new Dictionary<InventoryNode, AnimationClip>();
+            var clips = new Dictionary<InventoryNode, (AnimationClip, AnimationClip)>();
 
             foreach (var child in node.Children)
             {
-                enabledClips.Add(child, GenerateAnimationClip($"{child.Key}_enabled", child.Avatar, child.Value.GameObjects, child.Value.ObjectsToDisable, child.Value.AdditionalAnimations, child.Value.BlendShapesToChange, child.Value.MaterialsToReplace));
-                disabledClips.Add(child, GenerateAnimationClip($"{child.Key}_disabled", child.Avatar, new GameObject[] { }, child.Value.GameObjects));
+                var enabledClip = GenerateAnimationClip($"{child.Key}_enabled", child.Avatar, child.Value.GameObjects, child.Value.ObjectsToDisable, child.Value.AdditionalAnimations, child.Value.BlendShapesToChange, child.Value.MaterialsToReplace);
+                var disabledClip = GenerateAnimationClip($"{child.Key}_disabled", child.Avatar, new GameObject[] { }, child.Value.GameObjects);
+                clips.Add(child, (enabledClip, disabledClip));
             }
 
-            return (enabledClips, disabledClips);
+            return clips;
         }
-
 
         private static (Dictionary<InventoryNode, AnimationClip>, AnimationClip) GenerateUniqueClips(InventoryNode node)
         {
@@ -194,63 +193,63 @@ namespace dog.miruku.inventory
             driver.parameters.AddRange(node.Value.ParameterDriverBindings.Select(e => e.parameter));
         }
 
-        private static void AddTransitionsToDisable(InventoryNode node, Func<AnimatorStateTransition> addTransition, Action<string, AnimatorControllerParameterType> addParameter)
+        private static void AddEncodedEqualsConditions(AnimatorStateTransition transition, string parameterName, int value, int bits, Action<string, AnimatorControllerParameterType> addParameter)
         {
-            if (node.IsItem)
+            foreach (var (name, bit) in Encode(parameterName, bits, value))
             {
-                var transition = addTransition();
-                SetupTransition(transition);
-                if (node.ParentIsUnique)
-                {
-                    transition.AddCondition(AnimatorConditionMode.NotEqual, node.Index, node.ParameterName);
-                    addParameter(node.ParameterName, AnimatorControllerParameterType.Int);
-                }
-                else
-                {
-                    transition.AddCondition(AnimatorConditionMode.IfNot, 0, node.ParameterName);
-                    addParameter(node.ParameterName, AnimatorControllerParameterType.Bool);
-                }
-            }
-            if (node.Parent != null)
-            {
-                AddTransitionsToDisable(node.Parent, addTransition, addParameter);
+                transition.AddCondition(bit == 1 ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot, 0, name);
+                addParameter(name, AnimatorControllerParameterType.Bool);
             }
         }
 
-        private static void SetupTransitionConditionsToEnable(InventoryNode node, AnimatorStateTransition transition, Action<string, AnimatorControllerParameterType> addParameter)
+        private static List<AnimatorStateTransition> AddTransitionsToDisable(InventoryNode node, Func<AnimatorStateTransition> addTransition, Action<string, AnimatorControllerParameterType> addParameter, bool recursive = true)
         {
+            var transitions = new List<AnimatorStateTransition>();
             if (node.IsItem)
             {
-                if (node.ParentIsUnique)
+                foreach (var (name, bit) in Encode(node.ParameterName, node.ParameterBits, node.ParameterValue))
                 {
-                    transition.AddCondition(AnimatorConditionMode.Equals, node.Index, node.ParameterName);
-                    addParameter(node.ParameterName, AnimatorControllerParameterType.Int);
-                }
-                else
-                {
-                    transition.AddCondition(AnimatorConditionMode.If, 0, node.ParameterName);
-                    addParameter(node.ParameterName, AnimatorControllerParameterType.Bool);
+                    var transition = addTransition();
+                    SetupTransition(transition);
+                    transition.AddCondition(bit == 0 ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot, 0, name);
+                    addParameter(name, AnimatorControllerParameterType.Bool);
+                    transitions.Add(transition);
                 }
             }
 
-            if (node.Parent != null)
+            if (recursive && node.Parent != null)
+            {
+                transitions.AddRange(AddTransitionsToDisable(node.Parent, addTransition, addParameter));
+            }
+
+            return transitions;
+        }
+
+        private static void SetupTransitionConditionsToEnable(InventoryNode node, AnimatorStateTransition transition, Action<string, AnimatorControllerParameterType> addParameter, bool recursive = true)
+        {
+            if (node.IsItem)
+            {
+                AddEncodedEqualsConditions(transition, node.ParameterName, node.ParameterValue, node.ParameterBits, addParameter);
+            }
+
+            if (recursive && node.Parent != null)
             {
                 SetupTransitionConditionsToEnable(node.Parent, transition, addParameter);
             }
         }
 
-        private static AnimatorStateTransition AddTransitionToEnable(InventoryNode node, Func<AnimatorStateTransition> addTransition, Action<string, AnimatorControllerParameterType> addParameter)
+        private static AnimatorStateTransition AddTransitionToEnable(InventoryNode node, Func<AnimatorStateTransition> addTransition, Action<string, AnimatorControllerParameterType> addParameter, bool recursive = true)
         {
             var transition = addTransition();
             SetupTransition(transition);
-            SetupTransitionConditionsToEnable(node, transition, addParameter);
+            SetupTransitionConditionsToEnable(node, transition, addParameter, recursive);
             return transition;
         }
 
         // generate animations for node itself
         private static AnimatorController GenerateNonUniqueAnimatorController(InventoryNode node, AnimationClip enabledClip, AnimationClip disabledClip)
         {
-            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
+            var path = AssetUtil.GetPath($"Controllers/{node.Key}/Toggle.controller");
             var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
             controller.RemoveLayer(0);
             controller.AddLayer(node.Key);
@@ -259,6 +258,7 @@ namespace dog.miruku.inventory
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
 
             var parameters = new Dictionary<string, AnimatorControllerParameterType>();
+            parameters[node.ParameterName] = AnimatorControllerParameterType.Int;
 
             {
                 // setup idle
@@ -281,12 +281,18 @@ namespace dog.miruku.inventory
                                         (name, type) => parameters[name] = type);
                 SetupParameterDrivers(enabledState, node);
             }
+
             {
                 disabledState.motion = disabledClip;
-                var transition = AddTransitionToEnable(node.Parent,
+                var transitions = AddTransitionsToDisable(node,
                                         () => layer.stateMachine.AddAnyStateTransition(disabledState),
-                                        (name, type) => parameters[name] = type);
-                transition.AddCondition(AnimatorConditionMode.IfNot, 0, node.ParameterName);
+                                        (name, type) => parameters[name] = type,
+                                        recursive: false);
+                // this state requires parent to be enabled
+                foreach (var transition in transitions)
+                {
+                    SetupTransitionConditionsToEnable(node.Parent, transition, (name, type) => parameters[name] = type, recursive: true);
+                }
             }
 
             foreach (var parameter in parameters)
@@ -294,24 +300,24 @@ namespace dog.miruku.inventory
                 controller.AddParameter(parameter.Key, parameter.Value);
             }
 
+            SetupEncoder(controller, node.ParameterName, 1, 1);
+            SetupDecoder(controller, node.ParameterName, 1, 1);
+
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
             return controller;
         }
 
-        // generate animations for node.Children
         private static List<AnimatorController> GenerateNonUniqueAnimatorControllers(
-            Dictionary<InventoryNode, AnimationClip> enabledClips,
-            Dictionary<InventoryNode, AnimationClip> disabledClips
-        ) => enabledClips.Keys
+            Dictionary<InventoryNode, (AnimationClip, AnimationClip)> clips
+        ) => clips.Keys
                     .Where(node => node.IsItem)
-                    .Select(node => GenerateNonUniqueAnimatorController(node, enabledClips[node], disabledClips[node]))
+                    .Select(node => GenerateNonUniqueAnimatorController(node, clips[node].Item1, clips[node].Item2))
                     .ToList();
 
-        // generate animations for node.Children
         private static AnimatorController GenerateUniqueAnimatorController(InventoryNode node, Dictionary<InventoryNode, AnimationClip> clips, AnimationClip disableAllClip)
         {
-            var path = AssetUtil.GetPath($"Controllers/{node.Key}_select.controller");
+            var path = AssetUtil.GetPath($"Controllers/{node.Key}.controller");
             var controller = AnimatorController.CreateAnimatorControllerAtPath(path);
             controller.RemoveLayer(0);
             controller.AddLayer(node.Key);
@@ -320,6 +326,7 @@ namespace dog.miruku.inventory
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
 
             var parameters = new Dictionary<string, AnimatorControllerParameterType>();
+            parameters[node.Key] = AnimatorControllerParameterType.Int;
 
             {
                 // setup idle
@@ -348,13 +355,12 @@ namespace dog.miruku.inventory
                     defaultState.motion = disableAllClip;
                 }
 
-                parameters[node.IndexKey] = AnimatorControllerParameterType.Int;
-
-                // transition to default when parent is enabled and index is 0 (default)
-                var enableTransition = AddTransitionToEnable(node,
-                                        () => layer.stateMachine.AddAnyStateTransition(defaultState),
-                                        (name, type) => parameters[name] = type);
-                enableTransition.AddCondition(AnimatorConditionMode.Equals, 0, node.IndexKey);
+                var transition = layer.stateMachine.AddAnyStateTransition(defaultState);
+                SetupTransition(transition);
+                // conditions of parents to be enabled
+                SetupTransitionConditionsToEnable(node, transition, (name, type) => parameters[name] = type);
+                // and itself
+                AddEncodedEqualsConditions(transition, node.Key, 0, node.ChildrenBits, (name, type) => parameters[name] = type);
             }
 
             var position = new Vector3(0, 100);
@@ -379,9 +385,82 @@ namespace dog.miruku.inventory
                 controller.AddParameter(parameter.Key, parameter.Value);
             }
 
+            SetupEncoder(controller, node.Key, node.ChildrenBits, node.MaxChildrenIndex);
+            SetupDecoder(controller, node.Key, node.ChildrenBits, node.MaxChildrenIndex);
+
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
             return controller;
+        }
+
+        private static string GetEncodedParameterName(string parameterName, int bit) => $"{parameterName}/Bits/{bit}";
+
+        public static List<(string, int)> Encode(string parameterName, int bits, int value)
+        {
+            var list = new List<(string, int)>();
+            for (int i = 0; i < bits; i++)
+            {
+                int bit = (value >> (bits - 1 - i)) & 1;
+                list.Add((GetEncodedParameterName(parameterName, i), bit));
+            }
+            return list;
+        }
+
+        private static void SetupEncoder(AnimatorController controller, string parameterName, int bits, int maxIndex)
+        {
+            controller.AddLayer("Encoder");
+            var layer = controller.layers[controller.layers.Length - 1];
+
+            layer.stateMachine.entryPosition = new Vector3(0, 0);
+            layer.stateMachine.anyStatePosition = new Vector3(0, 50);
+
+            for (int i = 0; i <= maxIndex; i++)
+            {
+                var state = layer.stateMachine.AddState(i.ToString(), new Vector3(200, i * 50));
+                if (i == 0) layer.stateMachine.defaultState = state;
+                var transition = layer.stateMachine.AddAnyStateTransition(state);
+                SetupTransition(transition);
+
+                transition.AddCondition(AnimatorConditionMode.Equals, i, parameterName);
+                var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                foreach (var (name, value) in Encode(parameterName, bits, i))
+                {
+                    driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
+                    {
+                        name = name,
+                        value = value
+                    });
+                }
+            }
+        }
+
+        private static void SetupDecoder(AnimatorController controller, string parameterName, int bits, int maxIndex)
+        {
+            controller.AddLayer("Decoder");
+            var layer = controller.layers[controller.layers.Length - 1];
+
+            layer.stateMachine.entryPosition = new Vector3(0, 0);
+            layer.stateMachine.anyStatePosition = new Vector3(0, 50);
+
+            for (int i = 0; i <= maxIndex; i++)
+            {
+                var state = layer.stateMachine.AddState(i.ToString(), new Vector3(200, i * 50));
+                if (i == 0) layer.stateMachine.defaultState = state;
+                var transition = layer.stateMachine.AddAnyStateTransition(state);
+                SetupTransition(transition);
+
+                foreach (var (name, value) in Encode(parameterName, bits, i))
+                {
+                    transition.AddCondition(value == 1 ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot, 0, name);
+                }
+
+                var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
+                {
+                    name = parameterName,
+                    value = i
+                });
+            }
         }
     }
 }

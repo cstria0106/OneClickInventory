@@ -8,33 +8,40 @@ namespace dog.miruku.inventory
 {
     public class InventoryNode
     {
+        // node
         public string Key { get; }
         public int Index { get; }
         public Inventory Value { get; }
-        public IEnumerable<GameObject> RelatedGameObjects => Value.GameObjects.Concat(Children.SelectMany(e => e.RelatedGameObjects));
 
+        // tree
         public VRCAvatarDescriptor Avatar { get; }
         public InventoryNode Parent { get; }
         public IEnumerable<InventoryNode> Children { get; }
         public bool HasChildren => Children.Count() > 0;
         public InventoryNode Root => Parent != null ? Parent.Root : this;
         public bool IsRoot => Root == this;
-        public bool IsItem => CanBeItem && !Value.IsNotItem;
-        public bool CanBeItem => !IsRoot;
-        public bool IsInventory => HasChildren;
-        public bool ParentIsUnique => Parent != null && Parent.Value.IsUnique;
-        public InventoryNode DefaultChild => Value.IsUnique ? Children.Where(e => e.Value.Default).FirstOrDefault() : null;
+        public IEnumerable<GameObject> RelatedGameObjects => Value.GameObjects.Concat(Children.SelectMany(e => e.RelatedGameObjects));
 
-        public string IndexKey => Key + "_index";
-        public bool ParameterIsIndex => ParentIsUnique;
-        public string ParameterName => !IsItem ? null
-                                            : ParameterIsIndex ? Parent.IndexKey : Key;
-        public int ParameterIntValue => ParameterIsIndex ? Index : 1;
-        public int ParameterDefaultValue => ParameterIsIndex ? 0 : Value.Default ? 1 : 0;
+        public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? ChildrenBits : Children.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
+
+        // as a inventory
+        public bool IsInventory => HasChildren;
+        public InventoryNode DefaultChild => Value.IsUnique ? Children.Where(e => e.Value.Default).FirstOrDefault() : null;
+        public int MaxChildrenIndex => Children.Select(e => e.Index).DefaultIfEmpty(0).Max();
+        public int ChildrenBits => Mathf.CeilToInt(Mathf.Log(MaxChildrenIndex + 1, 2));
+
+        // as a item
+        public bool CanBeItem => !IsRoot;
+        public bool IsItem => CanBeItem && !Value.IsNotItem;
+        public bool ParentIsUnique => Parent != null && Parent.Value.IsUnique;
+        public string ParameterName => ParentIsUnique ? Parent.Key : $"{Key}/Toggle";
+        public int ParameterValue => ParentIsUnique ? Index : 1;
+        public int ParameterBits => ParentIsUnique ? Parent.ChildrenBits : 1;
+        public int ParameterDefault => ParentIsUnique ? 0 : Value.Default ? 1 : 0;
 
         public InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index)
         {
-            Key = parent != null ? $"{parent.Key}_{index}" : $"{avatar.gameObject.name.Replace("_", "__")}_inventory_{index}";
+            Key = parent != null ? $"{parent.Key}/{value.Name}" : $"OCInv/{value.Name}";
             Index = index;
             Value = value;
 
@@ -107,6 +114,5 @@ namespace dog.miruku.inventory
             }
         }
 
-        public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? 8 : Children.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
     }
 }
