@@ -73,10 +73,10 @@ public class MenuGenerator
             configs[node.ParameterName] = new ParameterConfig()
             {
                 nameOrPrefix = node.ParameterName,
-                syncType = ParameterSyncType.NotSynced,
+                syncType = ParameterSyncType.Int,
                 defaultValue = node.ParameterDefault,
                 saved = false,
-                localOnly = false,
+                localOnly = true,
             };
 
             foreach (var (name, defaultValue) in AnimationGenerator.Encode(node.ParameterName, node.ParameterBits, node.ParameterDefault))
