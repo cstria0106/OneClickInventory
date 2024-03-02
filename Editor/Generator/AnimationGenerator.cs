@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using dog.miruku.inventory.runtime;
-using PlasticGui.Configuration.OAuth;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
