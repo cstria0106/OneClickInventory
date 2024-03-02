@@ -75,7 +75,7 @@ public class MenuGenerator
                 nameOrPrefix = node.ParameterName,
                 syncType = ParameterSyncType.Int,
                 defaultValue = node.ParameterDefault,
-                saved = false,
+                saved = true,
                 localOnly = true,
             };
 
