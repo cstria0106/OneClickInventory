@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using dog.miruku.inventory.runtime;
-using PlasticPipe.PlasticProtocol.Messages;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -16,16 +15,19 @@ namespace dog.miruku.inventory
     {
         public static IEnumerable<AnimatorController> GenerateControllers(InventoryNode node)
         {
-            List<AnimatorController> controllers;
-            if (node.Value.IsUnique)
+            var controllers = new List<AnimatorController>();
+            if (node.IsInventory)
             {
-                var (clips, disableAllClip) = GenerateUniqueClips(node);
-                controllers = new List<AnimatorController>() { GenerateUniqueAnimatorController(node, clips, disableAllClip) };
-            }
-            else
-            {
-                var (enabledClips, disabledClips) = GenerateNonUniqueClips(node);
-                controllers = GenerateNonUniqueAnimatorControllers(enabledClips, disabledClips);
+                if (node.Value.IsUnique)
+                {
+                    var (clips, disableAllClip) = GenerateUniqueClips(node);
+                    controllers = new List<AnimatorController>() { GenerateUniqueAnimatorController(node, clips, disableAllClip) };
+                }
+                else
+                {
+                    var (enabledClips, disabledClips) = GenerateNonUniqueClips(node);
+                    controllers = GenerateNonUniqueAnimatorControllers(enabledClips, disabledClips);
+                }
             }
 
             foreach (var child in node.Children)
@@ -253,17 +255,24 @@ namespace dog.miruku.inventory
             controller.RemoveLayer(0);
             controller.AddLayer(node.Key);
             var layer = controller.layers[0];
-            layer.stateMachine.defaultState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
 
-            var enabledPosition = new Vector3(0, 50);
-            var disabledPosition = new Vector3(0, 100);
-
-            var enabledState = layer.stateMachine.AddState("Enabled", enabledPosition);
-            var disabledState = layer.stateMachine.AddState("Disabled", disabledPosition);
-
             var parameters = new Dictionary<string, AnimatorControllerParameterType>();
+
+            {
+                // setup idle
+                var idleState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
+                layer.stateMachine.defaultState = idleState;
+
+                // transition to idle when parent is disabled
+                AddTransitionsToDisable(node.Parent,
+                                        () => layer.stateMachine.AddAnyStateTransition(idleState),
+                                        (name, type) => parameters[name] = type);
+            }
+
+            var enabledState = layer.stateMachine.AddState($"Enabled ({node.Value.Name})", new Vector3(0, 50));
+            var disabledState = layer.stateMachine.AddState($"Disabled ({node.Value.Name})", new Vector3(0, 100));
 
             {
                 enabledState.motion = enabledClip;
@@ -274,9 +283,10 @@ namespace dog.miruku.inventory
             }
             {
                 disabledState.motion = disabledClip;
-                AddTransitionsToDisable(node,
+                var transition = AddTransitionToEnable(node.Parent,
                                         () => layer.stateMachine.AddAnyStateTransition(disabledState),
                                         (name, type) => parameters[name] = type);
+                transition.AddCondition(AnimatorConditionMode.IfNot, 0, node.ParameterName);
             }
 
             foreach (var parameter in parameters)
@@ -289,6 +299,7 @@ namespace dog.miruku.inventory
             return controller;
         }
 
+        // generate animations for node.Children
         private static List<AnimatorController> GenerateNonUniqueAnimatorControllers(
             Dictionary<InventoryNode, AnimationClip> enabledClips,
             Dictionary<InventoryNode, AnimationClip> disabledClips
@@ -308,12 +319,20 @@ namespace dog.miruku.inventory
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
 
-            var idleState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
-            layer.stateMachine.defaultState = idleState;
-
             var parameters = new Dictionary<string, AnimatorControllerParameterType>();
 
-            // default or disable animation
+            {
+                // setup idle
+                var idleState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
+                layer.stateMachine.defaultState = idleState;
+
+                // transition to idle when parent is disabled
+                AddTransitionsToDisable(node,
+                                        () => layer.stateMachine.AddAnyStateTransition(idleState),
+                                        (name, type) => parameters[name] = type);
+            }
+
+            // default or disabled
             {
                 var defaultNode = node.Children.FirstOrDefault(e => e.Value.Default);
                 var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 50));
@@ -331,20 +350,11 @@ namespace dog.miruku.inventory
 
                 parameters[node.IndexKey] = AnimatorControllerParameterType.Int;
 
-                // add enable transition with condition to enable the item's parent node
+                // transition to default when parent is enabled and index is 0 (default)
                 var enableTransition = AddTransitionToEnable(node,
                                         () => layer.stateMachine.AddAnyStateTransition(defaultState),
                                         (name, type) => parameters[name] = type);
-                // and it self
                 enableTransition.AddCondition(AnimatorConditionMode.Equals, 0, node.IndexKey);
-
-                // add disable transitions with condition to disable the item's parent node
-                AddTransitionsToDisable(node,
-                                        () => defaultState.AddExitTransition(),
-                                        (name, type) => parameters[name] = type);
-                // and it self
-                var exitTransition = defaultState.AddExitTransition();
-                exitTransition.AddCondition(AnimatorConditionMode.NotEqual, 0, node.IndexKey);
             }
 
             var position = new Vector3(0, 100);
@@ -360,15 +370,9 @@ namespace dog.miruku.inventory
                 AddTransitionToEnable(child,
                                         () => layer.stateMachine.AddAnyStateTransition(state),
                                         (name, type) => parameters[name] = type);
-                AddTransitionsToDisable(child,
-                                        () => state.AddExitTransition(),
-                                        (name, type) => parameters[name] = type);
-
                 SetupParameterDrivers(state, child);
                 position += gab;
             }
-
-            layer.stateMachine.exitPosition = new Vector3(400, 0);
 
             foreach (var parameter in parameters)
             {
