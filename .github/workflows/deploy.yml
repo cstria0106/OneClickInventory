@@ -33,7 +33,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./output/release.zip
-          asset_name: OneClickInventory-${{ github.ref }}.zip
+          asset_name: OneClickInventory-${{ github.ref_name }}.zip
           asset_content_type: application/zip
 
       - name: Trigger VPM repository workflow
@@ -41,4 +41,4 @@ jobs:
         with:
           owner: cstria0106
           repo: vpm-repos
-          github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
