@@ -1,11 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 using dog.miruku.inventory.runtime;
-using VRC.SDK3.Avatars.Components;
 using System.Linq;
 using UnityEditorInternal;
 using VRC.SDKBase;
-using System;
 
 namespace dog.miruku.inventory
 {

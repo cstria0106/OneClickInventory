@@ -52,7 +52,7 @@ public class MenuGenerator
         if (node.IsInventory)
         {
             var submenu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
-            if (node.IsItem) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterIntValue, submenu.transform);
+            if (node.IsItem) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterValue, submenu.transform);
             foreach (var child in node.Children)
             {
                 CreateMAMenu(child, submenu.transform);
@@ -60,7 +60,7 @@ public class MenuGenerator
         }
         else if (node.IsItem)
         {
-            AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterIntValue, parent);
+            AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterValue, parent);
         }
     }
 
@@ -68,18 +68,31 @@ public class MenuGenerator
     {
         if (configs == null) configs = new Dictionary<string, ParameterConfig>();
 
-        if (node.ParameterName != null && !configs.ContainsKey(node.ParameterName))
+        if (node.IsItem)
         {
-            configs[node.ParameterName] =
-                new ParameterConfig()
-                {
-                    nameOrPrefix = node.ParameterName,
-                    syncType = node.ParameterIsIndex ? ParameterSyncType.Int : ParameterSyncType.Bool,
-                    defaultValue = node.ParameterDefaultValue,
-                    saved = true,
-                    localOnly = false
-                };
+            configs[node.ParameterName] = new ParameterConfig()
+            {
+                nameOrPrefix = node.ParameterName,
+                syncType = ParameterSyncType.Int,
+                defaultValue = node.ParameterDefault,
+                saved = true,
+                localOnly = true,
+            };
+
+            foreach (var (name, defaultValue) in AnimationGenerator.Encode(node.ParameterName, node.ParameterBits, node.ParameterDefault))
+            {
+                configs[name] =
+                    new ParameterConfig()
+                    {
+                        nameOrPrefix = name,
+                        syncType = ParameterSyncType.Bool,
+                        defaultValue = defaultValue,
+                        saved = true,
+                        localOnly = false
+                    };
+            }
         }
+
 
         foreach (var child in node.Children) configs = GetMAParameterConfigs(child, configs);
 
@@ -88,7 +101,7 @@ public class MenuGenerator
 
     private static void CreateMAParameters(InventoryNode node)
     {
-        var parametersObject = new GameObject($"{node.Root.Index}_parameters");
+        var parametersObject = new GameObject($"Parameters");
         parametersObject.transform.SetParent(node.Root.Value.transform, false);
         var parameters = parametersObject.AddComponent<ModularAvatarParameters>();
         var configs = GetMAParameterConfigs(node);
@@ -105,7 +118,7 @@ public class MenuGenerator
             mergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
             mergeAnimator.deleteAttachedAnimator = true;
             mergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
-            mergeAnimator.matchAvatarWriteDefaults = true;
+            mergeAnimator.matchAvatarWriteDefaults = false;
             mergeAnimator.layerPriority = node.Value.LayerPriority;
         }
     }
