@@ -12,6 +12,7 @@ namespace dog.miruku.inventory
         public string Key { get; }
         public int Index { get; }
         public Inventory Value { get; }
+        public string EscapedName => Util.EscapeStateMachineName(Value.Name);
 
         // tree
         public VRCAvatarDescriptor Avatar { get; }
@@ -41,7 +42,7 @@ namespace dog.miruku.inventory
 
         public InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index)
         {
-            Key = parent != null ? $"{parent.Key}/{value.Name}" : $"OCInv/{value.Name}";
+            Key = parent != null ? $"{parent.Key}/{Util.EscapeStateMachineName(value.Name)}" : $"OCInv/{Util.EscapeStateMachineName(value.Name)}";
             Index = index;
             Value = value;
 

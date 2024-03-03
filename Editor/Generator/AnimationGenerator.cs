@@ -187,6 +187,7 @@ namespace dog.miruku.inventory
 
         private static void SetupParameterDrivers(AnimatorState state, InventoryNode node)
         {
+            if (node.Value.ParameterDriverBindings.Count() == 0) return;
             var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
             driver.parameters.AddRange(node.Value.ParameterDriverBindings.Select(e => e.parameter));
@@ -256,8 +257,11 @@ namespace dog.miruku.inventory
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
 
-            var parameters = new Dictionary<string, AnimatorControllerParameterType>();
-            parameters[node.ParameterName] = AnimatorControllerParameterType.Int;
+            var parameters = new Dictionary<string, AnimatorControllerParameterType>
+            {
+                [node.ParameterName] = AnimatorControllerParameterType.Int,
+                [GetSyncedParameterName(node.ParameterName)] = AnimatorControllerParameterType.Bool
+            };
 
             {
                 // setup idle
@@ -270,8 +274,8 @@ namespace dog.miruku.inventory
                                         (name, type) => parameters[name] = type);
             }
 
-            var enabledState = layer.stateMachine.AddState($"Enabled ({node.Value.Name})", new Vector3(0, 50));
-            var disabledState = layer.stateMachine.AddState($"Disabled ({node.Value.Name})", new Vector3(0, 100));
+            var enabledState = layer.stateMachine.AddState($"Enabled ({node.EscapedName})", new Vector3(0, 50));
+            var disabledState = layer.stateMachine.AddState($"Disabled ({node.EscapedName})", new Vector3(0, 100));
 
             {
                 enabledState.motion = enabledClip;
@@ -324,9 +328,11 @@ namespace dog.miruku.inventory
             layer.stateMachine.entryPosition = new Vector3(-200, 0);
             layer.stateMachine.anyStatePosition = new Vector3(-200, 50);
 
-            var parameters = new Dictionary<string, AnimatorControllerParameterType>();
-            parameters[node.Key] = AnimatorControllerParameterType.Int;
-
+            var parameters = new Dictionary<string, AnimatorControllerParameterType>
+            {
+                [node.Key] = AnimatorControllerParameterType.Int,
+                [GetSyncedParameterName(node.Key)] = AnimatorControllerParameterType.Bool
+            };
             {
                 // setup idle
                 var idleState = layer.stateMachine.AddState("Idle", new Vector3(0, 0));
@@ -344,7 +350,7 @@ namespace dog.miruku.inventory
                 var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 50));
                 if (defaultNode != null)
                 {
-                    defaultState.name = defaultNode.Value.Name;
+                    defaultState.name = defaultNode.EscapedName;
                     defaultState.motion = clips[defaultNode];
                     SetupParameterDrivers(defaultState, defaultNode);
                 }
@@ -369,7 +375,7 @@ namespace dog.miruku.inventory
             foreach (var child in node.Children.Where(e => e.IsItem).Where(e => !e.Value.Default))
             {
                 var enabledClip = clips[child];
-                var state = layer.stateMachine.AddState(child.Value.Name, position);
+                var state = layer.stateMachine.AddState(child.EscapedName, position);
                 state.motion = enabledClip;
 
                 AddTransitionToEnable(child,
@@ -392,6 +398,8 @@ namespace dog.miruku.inventory
             return controller;
         }
 
+        public static string GetSyncedParameterName(string parameterName) => $"{parameterName}/Synced";
+
         private static string GetEncodedParameterName(string parameterName, int bit) => $"{parameterName}/Bits/{bit}";
 
         public static List<(string, int)> Encode(string parameterName, int bits, int value)
@@ -407,20 +415,23 @@ namespace dog.miruku.inventory
 
         private static void SetupEncoder(AnimatorController controller, string parameterName, int bits, int maxIndex)
         {
-            controller.AddLayer("Encoder");
+            controller.AddLayer($"{parameterName}/Encoder");
             var layer = controller.layers[controller.layers.Length - 1];
 
             layer.stateMachine.entryPosition = new Vector3(0, 0);
             layer.stateMachine.anyStatePosition = new Vector3(0, 50);
 
+            var idleState = layer.stateMachine.AddState("Wait for sync");
+            layer.stateMachine.defaultState = idleState;
+
             for (int i = 0; i <= maxIndex; i++)
             {
-                var state = layer.stateMachine.AddState(i.ToString(), new Vector3(200, i * 50));
-                if (i == 0) layer.stateMachine.defaultState = state;
+                var state = layer.stateMachine.AddState(i.ToString(), new Vector3(200, 50 + i * 50));
                 var transition = layer.stateMachine.AddAnyStateTransition(state);
                 SetupTransition(transition);
 
                 transition.AddCondition(AnimatorConditionMode.Equals, i, parameterName);
+                transition.AddCondition(AnimatorConditionMode.If, 0, GetSyncedParameterName(parameterName));
                 var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 foreach (var (name, value) in Encode(parameterName, bits, i))
                 {
@@ -435,7 +446,7 @@ namespace dog.miruku.inventory
 
         private static void SetupDecoder(AnimatorController controller, string parameterName, int bits, int maxIndex)
         {
-            controller.AddLayer("Decoder");
+            controller.AddLayer($"{parameterName}/Decoder");
             var layer = controller.layers[controller.layers.Length - 1];
 
             layer.stateMachine.entryPosition = new Vector3(0, 0);
@@ -454,11 +465,16 @@ namespace dog.miruku.inventory
                 }
 
                 var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-                driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
-                {
-                    name = parameterName,
-                    value = i
-                });
+                driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>() {
+                    new VRC_AvatarParameterDriver.Parameter() {
+                        name = parameterName,
+                        value = i
+                    },
+                    new VRC_AvatarParameterDriver.Parameter() {
+                        name = GetSyncedParameterName(parameterName),
+                        value = 1
+                    }
+                };
             }
         }
     }

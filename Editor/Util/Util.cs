@@ -18,5 +18,7 @@ namespace dog.miruku.inventory
         }
 
         public static bool IsInAvatar(VRCAvatarDescriptor avatar, Transform t) => FindAvatar(t) == avatar;
+
+        public static string EscapeStateMachineName(string name) => name.Replace('.', '_').Replace(' ', '_').Replace('/', '_').Replace('(', '_').Replace(')', '_');
     }
 }

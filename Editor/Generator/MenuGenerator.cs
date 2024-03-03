@@ -74,8 +74,17 @@ public class MenuGenerator
             {
                 nameOrPrefix = node.ParameterName,
                 syncType = ParameterSyncType.Int,
-                defaultValue = node.ParameterDefault,
-                saved = true,
+                defaultValue = 0,
+                saved = false,
+                localOnly = true,
+            };
+
+            configs[AnimationGenerator.GetSyncedParameterName(node.ParameterName)] = new ParameterConfig()
+            {
+                nameOrPrefix = AnimationGenerator.GetSyncedParameterName(node.ParameterName),
+                syncType = ParameterSyncType.Bool,
+                defaultValue = 0,
+                saved = false,
                 localOnly = true,
             };
 
