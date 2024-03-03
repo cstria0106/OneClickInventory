@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using dog.miruku.inventory.runtime;
+﻿using dog.miruku.inventory.runtime;
 using UnityEditor;
-using UnityEngine;
 
 [CustomEditor(typeof(Closet))]
 public class ClosetEditor : Editor

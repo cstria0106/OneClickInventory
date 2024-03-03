@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using dog.miruku.inventory.runtime;
-using nadena.dev.ndmf.util;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
