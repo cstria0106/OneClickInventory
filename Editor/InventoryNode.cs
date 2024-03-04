@@ -40,9 +40,12 @@ namespace dog.miruku.inventory
         public int ParameterBits => ParentIsUnique ? Parent.ChildrenBits : 1;
         public int ParameterDefault => ParentIsUnique ? 0 : Value.Default ? 1 : 0;
 
-        public InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index)
+        public InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index, Dictionary<string, int> nameCount)
         {
-            Key = parent != null ? $"{parent.Key}/{Util.EscapeStateMachineName(value.Name)}" : $"OCInv/{Util.EscapeStateMachineName(value.Name)}";
+            if (nameCount.ContainsKey(value.Name)) nameCount[value.Name] += 1; else nameCount[value.Name] = 1;
+            var name = nameCount[value.Name] > 1 ? $"{value.Name}_{nameCount[value.Name]}" : value.Name;
+
+            Key = parent != null ? $"{parent.Key}/{Util.EscapeStateMachineName(name)}" : $"OCInv/{Util.EscapeStateMachineName(name)}";
             Index = index;
             Value = value;
 
@@ -70,7 +73,13 @@ namespace dog.miruku.inventory
         public InventoryNode FindNodeByValue(Inventory value) => FindNodeByValue(this, value);
         public static InventoryNode FindNodeByValue(VRCAvatarDescriptor avatar, Inventory value) => GetRootNodes(avatar).Select(e => FindNodeByValue(e, value)).Where(e => e != null).FirstOrDefault();
 
-        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar, InventoryNode parent = null, int index = 1)
+
+        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar, InventoryNode parent = null)
+        {
+            return ResolveChildren(transform, avatar, parent, new Dictionary<string, int>());
+        }
+
+        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar, InventoryNode parent, Dictionary<string, int> nameCount, int index = 1)
         {
             var children = new List<InventoryNode>();
             if (transform == null) return children;
@@ -80,17 +89,17 @@ namespace dog.miruku.inventory
                 {
                     if (parent != null && parent.Value.IsUnique && value.Default) // Is parent unique and this node is default
                     {
-                        children.Add(new InventoryNode(avatar, parent, value, 0));
+                        children.Add(new InventoryNode(avatar, parent, value, 0, nameCount));
                     }
                     else
                     {
-                        children.Add(new InventoryNode(avatar, parent, value, index));
+                        children.Add(new InventoryNode(avatar, parent, value, index, nameCount));
                         index += 1;
                     }
                 }
                 else
                 {
-                    var resolved = ResolveChildren(childTransform, avatar, parent, index);
+                    var resolved = ResolveChildren(childTransform, avatar, parent, nameCount, index);
                     children.AddRange(resolved);
                     index += resolved.Count;
                 }
