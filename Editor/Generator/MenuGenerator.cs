@@ -49,7 +49,7 @@ public class MenuGenerator
 
     private static void CreateMAMenu(InventoryNode node, Transform parent)
     {
-        if (node.IsInventory)
+        if (node.HasChildren)
         {
             var submenu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
             if (node.IsItem) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterValue, submenu.transform);

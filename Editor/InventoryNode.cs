@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Codice.CM.Common;
 using dog.miruku.inventory.runtime;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -18,17 +19,19 @@ namespace dog.miruku.inventory
         public VRCAvatarDescriptor Avatar { get; }
         public InventoryNode Parent { get; }
         public IEnumerable<InventoryNode> Children { get; }
+        public IEnumerable<InventoryNode> ChildItems => Children.Where(e => e.IsItem);
         public bool HasChildren => Children.Count() > 0;
+        public bool HasChildItems => ChildItems.Count() > 0;
         public InventoryNode Root => Parent != null ? Parent.Root : this;
         public bool IsRoot => Root == this;
         public IEnumerable<GameObject> RelatedGameObjects => Value.GameObjects.Concat(Children.SelectMany(e => e.RelatedGameObjects));
 
-        public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? ChildrenBits : Children.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
+        public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? ChildrenBits : ChildItems.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
 
         // as a inventory
-        public bool IsInventory => HasChildren;
-        public InventoryNode DefaultChild => Value.IsUnique ? Children.Where(e => e.Value.Default).FirstOrDefault() : null;
-        public int MaxChildrenIndex => Children.Select(e => e.Index).DefaultIfEmpty(0).Max();
+        public bool IsInventory => HasChildItems;
+        public InventoryNode DefaultChild => Value.IsUnique ? ChildItems.Where(e => e.Value.Default).FirstOrDefault() : null;
+        public int MaxChildrenIndex => ChildItems.Select(e => e.Index).DefaultIfEmpty(0).Max();
         public int ChildrenBits => Mathf.CeilToInt(Mathf.Log(MaxChildrenIndex + 1, 2));
 
         // as a item
@@ -93,8 +96,15 @@ namespace dog.miruku.inventory
                     }
                     else
                     {
-                        children.Add(new InventoryNode(avatar, parent, value, index, nameCount));
-                        index += 1;
+                        if (value.IsNotItem)
+                        {
+                            children.Add(new InventoryNode(avatar, parent, value, -1, nameCount));
+                        }
+                        else
+                        {
+                            children.Add(new InventoryNode(avatar, parent, value, index, nameCount));
+                            index += 1;
+                        }
                     }
                 }
                 else

@@ -217,7 +217,7 @@ namespace dog.miruku.inventory
                 _showItems = EditorGUILayout.Foldout(_showItems, Localization.Get("items"));
                 if (_showItems)
                 {
-                    foreach (var child in node.Children)
+                    foreach (var child in node.ChildItems)
                     {
                         EditorGUILayout.ObjectField(child.Value, typeof(Inventory), false);
                     }
@@ -269,7 +269,7 @@ namespace dog.miruku.inventory
             // disable other default
             if (node.ParentIsUnique && node.Value.Default)
             {
-                foreach (var e in node.Parent.Children.Where(e => e.Value != Inventory))
+                foreach (var e in node.Parent.ChildItems.Where(e => e.Value != Inventory))
                 {
                     e.Value.Default = false;
                 }

@@ -135,7 +135,7 @@ namespace dog.miruku.inventory
         {
             var clips = new Dictionary<InventoryNode, (AnimationClip, AnimationClip)>();
 
-            foreach (var child in node.Children)
+            foreach (var child in node.ChildItems)
             {
                 var enabledClip = GenerateAnimationClip($"{child.Key}_enabled", child.Avatar, child.Value.GameObjects, child.Value.ObjectsToDisable, child.Value.AdditionalAnimations, child.Value.BlendShapesToChange, child.Value.MaterialsToReplace);
                 var disabledClip = GenerateAnimationClip($"{child.Key}_disabled", child.Avatar, new GameObject[] { }, child.Value.GameObjects);
@@ -147,8 +147,8 @@ namespace dog.miruku.inventory
 
         private static (Dictionary<InventoryNode, AnimationClip>, AnimationClip) GenerateUniqueClips(InventoryNode node)
         {
-            var allObjects = node.Children.SelectMany(child => child.Value.GameObjects).ToImmutableHashSet();
-            var groups = node.Children.Select(
+            var allObjects = node.ChildItems.SelectMany(child => child.Value.GameObjects).ToImmutableHashSet();
+            var groups = node.ChildItems.Select(
                 child => (
                     child,
                     enabled: child.Value.GameObjects.ToList(),
@@ -346,7 +346,7 @@ namespace dog.miruku.inventory
 
             // default or disabled
             {
-                var defaultNode = node.Children.FirstOrDefault(e => e.Value.Default);
+                var defaultNode = node.ChildItems.FirstOrDefault(e => e.Value.Default);
                 var defaultState = layer.stateMachine.AddState("Default", new Vector3(0, 50));
                 if (defaultNode != null)
                 {
@@ -372,7 +372,7 @@ namespace dog.miruku.inventory
             var gab = new Vector3(0, 50);
 
             // non default item animations
-            foreach (var child in node.Children.Where(e => e.IsItem).Where(e => !e.Value.Default))
+            foreach (var child in node.ChildItems.Where(e => e.IsItem).Where(e => !e.Value.Default))
             {
                 var enabledClip = clips[child];
                 var state = layer.stateMachine.AddState(child.EscapedName, position);
