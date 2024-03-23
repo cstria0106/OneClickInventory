@@ -73,6 +73,8 @@ namespace dog.miruku.inventory
                 drawElementCallback = (rect, index, isActive, isFocused) =>
                     {
                         var element = _blendShapesToChangeList.serializedProperty.GetArrayElementAtIndex(index);
+                        var renderer = element.FindPropertyRelative("renderer").objectReferenceValue as SkinnedMeshRenderer;
+                        var blendShapes = renderer != null ? Enumerable.Range(0, renderer.sharedMesh.blendShapeCount).Select(i => renderer.sharedMesh.GetBlendShapeName(i)).ToArray() : new string[0];
                         var gab = 10f;
                         var valueWidth = 50f - gab / 2;
                         var otherWidth = (rect.width - valueWidth - gab) / 2 - gab / 2;
@@ -81,7 +83,9 @@ namespace dog.miruku.inventory
                         var valueX = nameX + otherWidth + gab;
 
                         EditorGUI.PropertyField(new Rect(rendererX, rect.y, otherWidth, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("renderer"), GUIContent.none);
-                        EditorGUI.PropertyField(new Rect(nameX, rect.y, otherWidth, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("name"), GUIContent.none);
+                        SerializedProperty blendShapeProperty = element.FindPropertyRelative("name");
+                        var blendShapeIndex = EditorGUI.Popup(new Rect(nameX, rect.y, otherWidth, EditorGUIUtility.singleLineHeight), blendShapes.ToList().IndexOf(blendShapeProperty.stringValue), blendShapes);
+                        blendShapeProperty.stringValue = blendShapeIndex >= 0 ? blendShapes[blendShapeIndex] : "";
                         EditorGUI.PropertyField(new Rect(valueX, rect.y, valueWidth, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("value"), GUIContent.none);
                     }
             };
@@ -114,8 +118,13 @@ namespace dog.miruku.inventory
                         var fromX = rendererX + width + gab;
                         var toX = fromX + width + gab;
 
+                        var renderer = element.FindPropertyRelative("renderer").objectReferenceValue as Renderer;
+                        var materials = renderer != null ? renderer.sharedMaterials : new Material[0];
+
                         EditorGUI.PropertyField(new Rect(rendererX, rect.y, width, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("renderer"), GUIContent.none);
-                        EditorGUI.PropertyField(new Rect(fromX, rect.y, width, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("from"), GUIContent.none);
+                        var from = element.FindPropertyRelative("from");
+                        var fromIndex = EditorGUI.Popup(new Rect(fromX, rect.y, width, EditorGUIUtility.singleLineHeight), materials.ToList().IndexOf(from.objectReferenceValue as Material), materials.Select(e => e != null ? e.name : "").ToArray());
+                        from.objectReferenceValue = fromIndex >= 0 ? materials[fromIndex] : null;
                         EditorGUI.PropertyField(new Rect(toX, rect.y, width, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("to"), GUIContent.none);
                     },
             };
