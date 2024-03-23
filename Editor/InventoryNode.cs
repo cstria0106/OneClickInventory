@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Codice.CM.Common;
 using dog.miruku.inventory.runtime;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
