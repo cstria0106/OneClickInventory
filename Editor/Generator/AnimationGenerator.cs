@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using dog.miruku.inventory.runtime;
+using MonoMod.Utils;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -13,20 +14,23 @@ namespace dog.miruku.inventory
 {
     public class AnimationGenerator
     {
-        public static IEnumerable<AnimatorController> GenerateControllers(InventoryNode node)
+        public static Dictionary<InventoryNode, AnimatorController> GenerateControllers(InventoryNode node)
         {
-            var controllers = new List<AnimatorController>();
+            var controllers = new Dictionary<InventoryNode, AnimatorController>();
             if (node.IsInventory)
             {
                 if (node.Value.IsUnique)
                 {
                     var (clips, disableAllClip) = GenerateUniqueClips(node);
-                    controllers = new List<AnimatorController>() { GenerateUniqueAnimatorController(node, clips, disableAllClip) };
+                    controllers[node] = GenerateUniqueAnimatorController(node, clips, disableAllClip);
                 }
                 else
                 {
                     var clips = GenerateNonUniqueClips(node);
-                    controllers = GenerateNonUniqueAnimatorControllers(clips);
+                    foreach (var child in node.ChildItems)
+                    {
+                        controllers[child] = GenerateNonUniqueAnimatorController(child, clips[child].Item1, clips[child].Item2);
+                    }
                 }
             }
 
@@ -310,13 +314,6 @@ namespace dog.miruku.inventory
             AssetDatabase.SaveAssets();
             return controller;
         }
-
-        private static List<AnimatorController> GenerateNonUniqueAnimatorControllers(
-            Dictionary<InventoryNode, (AnimationClip, AnimationClip)> clips
-        ) => clips.Keys
-                    .Where(node => node.IsItem)
-                    .Select(node => GenerateNonUniqueAnimatorController(node, clips[node].Item1, clips[node].Item2))
-                    .ToList();
 
         private static AnimatorController GenerateUniqueAnimatorController(InventoryNode node, Dictionary<InventoryNode, AnimationClip> clips, AnimationClip disableAllClip)
         {

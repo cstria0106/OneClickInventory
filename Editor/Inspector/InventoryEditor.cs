@@ -119,7 +119,7 @@ namespace dog.miruku.inventory
                         var toX = fromX + width + gab;
 
                         var renderer = element.FindPropertyRelative("renderer").objectReferenceValue as Renderer;
-                        var materials = renderer != null ? renderer.sharedMaterials : new Material[0];
+                        var materials = renderer != null ? renderer.sharedMaterials.Distinct().ToArray() : new Material[0];
 
                         EditorGUI.PropertyField(new Rect(rendererX, rect.y, width, EditorGUIUtility.singleLineHeight), element.FindPropertyRelative("renderer"), GUIContent.none);
                         var from = element.FindPropertyRelative("from");
@@ -237,6 +237,9 @@ namespace dog.miruku.inventory
                 }
                 EditorGUI.EndDisabledGroup();
                 EditorGUILayout.PropertyField(IsUnique, new GUIContent(Localization.Get("isUnique")));
+
+                if (node.Value.IsUnique)
+                    EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority")));
             }
 
             if (node.CanBeItem)
@@ -269,7 +272,8 @@ namespace dog.miruku.inventory
 
                 EditorGUILayout.PropertyField(AdditionalAnimations, new GUIContent(Localization.Get("additionalAnimations")));
 
-                EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority")));
+                if (!node.ParentIsUnique)
+                    EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority")));
             }
 
             InventoryEditorUtil.Footer(node.Avatar, _avatarHierarchyFolding);

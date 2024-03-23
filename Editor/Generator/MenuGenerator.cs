@@ -117,11 +117,13 @@ public class MenuGenerator
         parameters.parameters = configs.Values.ToList();
     }
 
-    private static void CreateMAMergeAnimator(InventoryNode node, IEnumerable<AnimatorController> controllers)
+    private static void CreateMAMergeAnimator(Dictionary<InventoryNode, AnimatorController> controllers)
     {
         // Add merge animator
-        foreach (var controller in controllers)
+        foreach (var entry in controllers)
         {
+            var node = entry.Key;
+            var controller = entry.Value;
             var mergeAnimator = node.Value.gameObject.AddComponent<ModularAvatarMergeAnimator>();
             mergeAnimator.animator = controller;
             mergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
@@ -132,9 +134,9 @@ public class MenuGenerator
         }
     }
 
-    public static void Generate(InventoryNode node, IEnumerable<AnimatorController> controllers, Transform menuParent)
+    public static void Generate(InventoryNode node, Dictionary<InventoryNode, AnimatorController> controllers, Transform menuParent)
     {
-        CreateMAMergeAnimator(node, controllers);
+        CreateMAMergeAnimator(controllers);
         CreateMAParameters(node);
         CreateMAMenu(node, menuParent);
     }
