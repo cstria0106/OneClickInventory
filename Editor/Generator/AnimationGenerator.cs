@@ -417,11 +417,14 @@ namespace dog.miruku.inventory
             controller.AddLayer($"{parameterName}/Encoder");
             var layer = controller.layers[controller.layers.Length - 1];
 
+
             layer.stateMachine.entryPosition = new Vector3(0, 0);
             layer.stateMachine.anyStatePosition = new Vector3(0, 50);
 
             var idleState = layer.stateMachine.AddState("Wait for sync");
             layer.stateMachine.defaultState = idleState;
+
+            controller.AddParameter("IsLocal", AnimatorControllerParameterType.Bool);
 
             for (int i = 0; i <= maxIndex; i++)
             {
@@ -431,6 +434,7 @@ namespace dog.miruku.inventory
 
                 transition.AddCondition(AnimatorConditionMode.Equals, i, parameterName);
                 transition.AddCondition(AnimatorConditionMode.If, 0, GetSyncedParameterName(parameterName));
+                transition.AddCondition(AnimatorConditionMode.If, 0, "IsLocal");
                 var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 foreach (var (name, value) in Encode(parameterName, bits, i))
                 {
