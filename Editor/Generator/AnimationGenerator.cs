@@ -108,7 +108,9 @@ namespace dog.miruku.inventory
                 foreach (var e in setMaterials.Where(e => Util.IsInAvatar(avatar, e.renderer.transform)))
                 {
                     var objectPath = GetRelativePath(e.renderer.transform, avatar.transform);
-                    var indexes = e.renderer.sharedMaterials.Where(m => m == e.from).Select((m, i) => i).ToList();
+                    var indexes = e.renderer.sharedMaterials.Select((m, i) => (m, i))
+                        .Where(m => e.from == m.m)
+                        .Select(m => m.i).ToList();
                     var rendererType = e.renderer is SkinnedMeshRenderer ? typeof(SkinnedMeshRenderer)
                                                 : e.renderer is MeshRenderer ? typeof(MeshRenderer) : null;
                     foreach (var i in indexes)
