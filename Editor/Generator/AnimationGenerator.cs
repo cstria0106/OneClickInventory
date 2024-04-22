@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using dog.miruku.inventory.runtime;
-using MonoMod.Utils;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -14,29 +13,32 @@ namespace dog.miruku.inventory
 {
     public class AnimationGenerator
     {
-        public static Dictionary<InventoryNode, AnimatorController> GenerateControllers(InventoryNode node)
+        public static Dictionary<AnimatorController, int> GenerateControllers(InventoryNode node)
         {
-            var controllers = new Dictionary<InventoryNode, AnimatorController>();
+            var controllers = new Dictionary<AnimatorController, int>();
             if (node.IsInventory)
             {
                 if (node.Value.IsUnique)
                 {
                     var (clips, disableAllClip) = GenerateUniqueClips(node);
-                    controllers[node] = GenerateUniqueAnimatorController(node, clips, disableAllClip);
+                    controllers[GenerateUniqueAnimatorController(node, clips, disableAllClip)] = node.Value.LayerPriority;
                 }
                 else
                 {
                     var clips = GenerateNonUniqueClips(node);
                     foreach (var child in node.ChildItems)
                     {
-                        controllers[child] = GenerateNonUniqueAnimatorController(child, clips[child].Item1, clips[child].Item2);
+                        controllers[GenerateNonUniqueAnimatorController(child, clips[child].Item1, clips[child].Item2)] = 0;
                     }
                 }
             }
 
             foreach (var child in node.Children)
             {
-                controllers.AddRange(GenerateControllers(child));
+                foreach (var entry in GenerateControllers(child))
+                {
+                    controllers[entry.Key] = entry.Value;
+                }
             }
 
             return controllers;

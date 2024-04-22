@@ -117,26 +117,26 @@ public class MenuGenerator
         parameters.parameters = configs.Values.ToList();
     }
 
-    private static void CreateMAMergeAnimator(Dictionary<InventoryNode, AnimatorController> controllers)
+    private static void CreateMAMergeAnimator(Dictionary<AnimatorController, int> controllers, GameObject parent)
     {
         // Add merge animator
         foreach (var entry in controllers)
         {
-            var node = entry.Key;
-            var controller = entry.Value;
-            var mergeAnimator = node.Value.gameObject.AddComponent<ModularAvatarMergeAnimator>();
-            mergeAnimator.animator = controller;
+            var mergeAnimator = parent.AddComponent<ModularAvatarMergeAnimator>();
+            mergeAnimator.animator = entry.Key;
             mergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
             mergeAnimator.deleteAttachedAnimator = true;
             mergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
             mergeAnimator.matchAvatarWriteDefaults = false;
-            mergeAnimator.layerPriority = node.Value.LayerPriority;
+            mergeAnimator.layerPriority = entry.Value;
         }
     }
 
-    public static void Generate(InventoryNode node, Dictionary<InventoryNode, AnimatorController> controllers, Transform menuParent)
+    public static void Generate(InventoryNode node, Dictionary<AnimatorController, int> controllers, Transform menuParent)
     {
-        CreateMAMergeAnimator(controllers);
+        var mergeAnimatorParent = new GameObject("MergeAnimator");
+        mergeAnimatorParent.transform.SetParent(node.Root.Value.transform, false);
+        CreateMAMergeAnimator(controllers, mergeAnimatorParent);
         CreateMAParameters(node);
         CreateMAMenu(node, menuParent);
     }
