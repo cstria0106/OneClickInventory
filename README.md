@@ -1,4 +1,4 @@
-# One-Click Inventory
+<img src="https://github.com/cstria0106/OneClickInventory/assets/11474150/927d3500-e3e9-4566-94e1-c1b743adc2dc" style="width: 500px;">
 
 [English](https://github.com/cstria0106/OneClickInventory/blob/main/README.md) | [Korean](https://github.com/cstria0106/OneClickInventory/blob/main/README.ko.md)
 
