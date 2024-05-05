@@ -33,6 +33,9 @@ namespace dog.miruku.inventory.runtime
     [AddComponentMenu("One-Click Inventory/Inventory")]
     public class Inventory : MonoBehaviour, IEditorOnly
     {
+        [SerializeField] private bool _installMenuInRoot;
+        public bool InstallMenuInRoot { get => _installMenuInRoot; set => _installMenuInRoot = value; }
+
         [FormerlySerializedAs("_closetName")]
         [SerializeField]
         private string _name;

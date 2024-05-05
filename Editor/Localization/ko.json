@@ -27,5 +27,6 @@
   "avatar": "아바타",
   "avatarHierarchy": "전체 아바타 인벤토리 구조",
   "usedParameterMemory": "사용하는 파라미터 메모리",
-  "isNotItem": "아이템으로 설정하지 않음"
+  "isNotItem": "아이템으로 설정하지 않음",
+  "installMenuInRoot": "메뉴를 최상위에 설치"
 }

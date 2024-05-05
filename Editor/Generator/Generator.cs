@@ -1,4 +1,5 @@
 ﻿
+using System.Linq;
 using dog.miruku.inventory;
 using dog.miruku.inventory.runtime;
 using nadena.dev.modular_avatar.core;
@@ -27,24 +28,30 @@ public class Generator
             menuIcon = config.CustomIcon;
         }
 
-        // create menu installer
-        var menuObject = new GameObject(menuName);
+        var rootNodes = InventoryNode.GetRootNodes(avatar);
+        GameObject menuObject = new GameObject(menuName);
         menuObject.transform.SetParent(avatar.transform);
-        var menuInstaller = menuObject.AddComponent<ModularAvatarMenuInstaller>();
-        menuInstaller.menuToAppend = avatar.expressionsMenu;
 
-        // create root menu
-        var menuItem = menuObject.AddComponent<ModularAvatarMenuItem>();
-        menuItem.Control = new VRCExpressionsMenu.Control()
+        // Create root menu when there are non-root menu items
+        if (rootNodes.Where(e => !e.Value.InstallMenuInRoot).Count() > 0)
         {
-            type = VRCExpressionsMenu.Control.ControlType.SubMenu,
-            name = menuName,
-            icon = menuIcon
-        };
-        menuItem.MenuSource = SubmenuSource.Children;
+            // create menu installer
+            var menuInstaller = menuObject.AddComponent<ModularAvatarMenuInstaller>();
+            menuInstaller.menuToAppend = avatar.expressionsMenu;
+
+            // create root menu
+            var menuItem = menuObject.AddComponent<ModularAvatarMenuItem>();
+            menuItem.Control = new VRCExpressionsMenu.Control()
+            {
+                type = VRCExpressionsMenu.Control.ControlType.SubMenu,
+                name = menuName,
+                icon = menuIcon
+            };
+            menuItem.MenuSource = SubmenuSource.Children;
+        }
+
 
         // generate inventories
-        var rootNodes = InventoryNode.GetRootNodes(avatar);
         foreach (var node in rootNodes)
         {
             var controllers = AnimationGenerator.GenerateControllers(node);

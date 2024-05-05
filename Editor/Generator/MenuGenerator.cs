@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using dog.miruku.inventory;
 using nadena.dev.modular_avatar.core;
 using UnityEditor.Animations;
@@ -47,7 +48,7 @@ public class MenuGenerator
         return menu;
     }
 
-    private static void CreateMAMenu(InventoryNode node, Transform parent)
+    private static ModularAvatarMenuItem CreateMAMenu(InventoryNode node, Transform parent)
     {
         var menuItemsToInstall = node.MenuItemsToInstall.ToArray();
         if (node.HasChildren || menuItemsToInstall.Length > 0)
@@ -66,11 +67,14 @@ public class MenuGenerator
                     menuItem.transform.SetParent(submenu.transform);
                 }
             }
+            return submenu;
         }
         else if (node.IsItem)
         {
-            AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterValue, parent);
+            return AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterValue, parent);
         }
+
+        return null;
     }
 
     private static Dictionary<string, ParameterConfig> GetMAParameterConfigs(InventoryNode node, Dictionary<string, ParameterConfig> configs = null)
@@ -147,6 +151,15 @@ public class MenuGenerator
         mergeAnimatorParent.transform.SetParent(node.Root.Value.transform, false);
         CreateMAMergeAnimator(controllers, mergeAnimatorParent);
         CreateMAParameters(node);
-        CreateMAMenu(node, menuParent);
+        if (node.IsRoot && node.Value.InstallMenuInRoot)
+        {
+            var menuItem = CreateMAMenu(node, node.Avatar.transform);
+            var installer = menuItem.gameObject.AddComponent<ModularAvatarMenuInstaller>();
+            installer.menuToAppend = node.Avatar.expressionsMenu;
+        }
+        else
+        {
+            CreateMAMenu(node, menuParent);
+        }
     }
 }

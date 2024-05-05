@@ -12,6 +12,7 @@ namespace dog.miruku.inventory
     public class InventoryEditor : Editor
     {
         private Inventory Inventory { get; set; }
+        private SerializedProperty InstallMenuInRoot { get; set; }
         private SerializedProperty Name { get; set; }
 
         private SerializedProperty IsUnique { get; set; }
@@ -44,6 +45,7 @@ namespace dog.miruku.inventory
             Name = serializedObject.FindProperty("_name");
 
             IsUnique = serializedObject.FindProperty("_isUnique");
+            InstallMenuInRoot = serializedObject.FindProperty("_installMenuInRoot");
 
             Default = serializedObject.FindProperty("_default");
             AdditionalObjects = serializedObject.FindProperty("_additionalObjects");
@@ -212,6 +214,11 @@ namespace dog.miruku.inventory
             serializedObject.Update();
 
             EditorGUILayout.LabelField(Localization.Get("menu"), InventoryEditorUtil.HeaderStyle);
+            if (node.IsRoot)
+            {
+                EditorGUILayout.PropertyField(InstallMenuInRoot, new GUIContent(Localization.Get("installMenuInRoot"), "체크하면 메뉴가 서브 메뉴가 아닌 최상위에 설치됩니다."));
+            }
+
             EditorGUILayout.PropertyField(Name, new GUIContent(Localization.Get("name")));
             var texture = AssetPreview.GetAssetPreview(Inventory.Icon);
             EditorGUILayout.LabelField(Localization.Get("customIcon"));
@@ -223,6 +230,7 @@ namespace dog.miruku.inventory
                 Inventory.Icon = icon;
             }
             GUILayout.EndHorizontal();
+
 
             if (node.IsInventory)
             {
