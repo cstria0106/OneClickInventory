@@ -25,6 +25,8 @@ namespace dog.miruku.inventory
         public bool IsRoot => Root == this;
         public IEnumerable<GameObject> RelatedGameObjects => Value.GameObjects.Concat(Children.SelectMany(e => e.RelatedGameObjects));
 
+        public IEnumerable<InventoryMenuInstaller> MenuItemsToInstall => Root.Avatar.GetComponentsInChildren<InventoryMenuInstaller>().Where(e => e.Inventory == Value);
+
         public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? ChildrenBits : ChildItems.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
 
         // as a inventory

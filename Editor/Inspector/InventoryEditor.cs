@@ -193,6 +193,12 @@ namespace dog.miruku.inventory
 
         public override void OnInspectorGUI()
         {
+            EditorGUILayout.LabelField(
+                "이 컴포넌트가 있는 오브젝트는 인벤토리 혹은 아이템으로 설정됩니다.",
+                new GUIStyle(EditorStyles.label) { wordWrap = true }
+            );
+            EditorGUILayout.Space();
+
             var avatar = Util.FindAvatar(Inventory.transform.parent);
             if (avatar == null)
             {
@@ -236,17 +242,17 @@ namespace dog.miruku.inventory
                     EditorGUILayout.ObjectField(Localization.Get("defaultItem"), node.DefaultChild.Value, typeof(Inventory), false);
                 }
                 EditorGUI.EndDisabledGroup();
-                EditorGUILayout.PropertyField(IsUnique, new GUIContent(Localization.Get("isUnique")));
+                EditorGUILayout.PropertyField(IsUnique, new GUIContent(Localization.Get("isUnique"), "체크하면 하위 아이템을 하나만 선택할 수 있게 됩니다.\n즉 옷이나 헤어와 같이 같이 하나를 입으면 다른 것은 비활성화 돼야 하는 경우에 사용합니다.\n액세서리와 같이 여러 개를 동시에 활성화 할 수 있는 경우에는 체크하지 않을 수 있습니다.\n만약 체크되어있고 기본 아이템이 설정되지 않은 경우에는 아무것도 활성화 되지 않은 상태가 기본이 됩니다."));
 
                 if (node.Value.IsUnique)
-                    EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority")));
+                    EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority"), "FX 레이어 상의 레이어 우선순위를 결정합니다. Modular Avatar와 연동됩니다."));
             }
 
             if (node.CanBeItem)
             {
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField(Localization.Get("item"), InventoryEditorUtil.HeaderStyle);
-                EditorGUILayout.PropertyField(IsNotItem, new GUIContent(Localization.Get("isNotItem")));
+                EditorGUILayout.PropertyField(IsNotItem, new GUIContent(Localization.Get("isNotItem"), "체크하면 이것은 아이템이 아니게 됩니다. 주로 카테고리를 나타내기 위해 사용합니다."));
             }
 
             if (node.IsItem)
@@ -254,13 +260,26 @@ namespace dog.miruku.inventory
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.ObjectField(Localization.Get("inventory"), node.Parent.Value, typeof(Inventory), false);
                 EditorGUI.EndDisabledGroup();
-                EditorGUILayout.PropertyField(Default, new GUIContent(node.ParentIsUnique ? Localization.Get("defaultUnique") : Localization.Get("default")));
-                EditorGUILayout.PropertyField(AdditionalObjects, new GUIContent(Localization.Get("additionalObject")));
-                EditorGUILayout.PropertyField(ObjectsToDisable, new GUIContent(Localization.Get("disableObject")));
+                EditorGUILayout.PropertyField(Default, new GUIContent(node.ParentIsUnique ? Localization.Get("defaultUnique") : Localization.Get("default"), "아바타 초기 상태일 때 (Reset Avatar 시) 기본적으로 활성화되게 됩니다. 또한 상위 인벤토리가 '하나의 아이템만 활성화' 상태인 경우, 기본 아이템으로 설정합니다."));
+                EditorGUILayout.PropertyField(AdditionalObjects, new GUIContent(Localization.Get("additionalObject"), "해당 아이템 활성화 시 함께 활성화 할 오브젝트를 지정합니다. 속옷 등을 옷과 같이 입는 경우에 유용합니다."));
+                EditorGUILayout.PropertyField(ObjectsToDisable, new GUIContent(Localization.Get("disableObject"), "해당 아이템 활성화 시 비활성화 할 오브젝트를 지정합니다. 후드 티를 뚫는 헤어 파츠를 비활성화 하는 등에 유용합니다."));
                 BlendShapesToChange.isExpanded = EditorGUILayout.Foldout(BlendShapesToChange.isExpanded, Localization.Get("setBlendShape"));
-                if (BlendShapesToChange.isExpanded) _blendShapesToChangeList.DoLayoutList();
+                if (BlendShapesToChange.isExpanded)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("Blend Shape를 변경합니다. Shrink 블렌드 셰이프나 Foot Heel(까치발) 블렌드 셰이프과 함께 사용하는 옷에 유용합니다.", new GUIStyle(EditorStyles.label) { wordWrap = true, fontSize = 11 });
+                    EditorGUILayout.Space();
+                    _blendShapesToChangeList.DoLayoutList();
+                }
                 MaterialsToReplace.isExpanded = EditorGUILayout.Foldout(MaterialsToReplace.isExpanded, Localization.Get("replaceMaterial"));
-                if (MaterialsToReplace.isExpanded) _materialsToReplaceList.DoLayoutList();
+
+                if (MaterialsToReplace.isExpanded)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("매터리얼을 변경합니다. 옷의 색상을 선택하게 하고 싶거나, 액세서리의 색상을 옷과 매칭되게 하는 등에 유용합니다.", new GUIStyle(EditorStyles.label) { wordWrap = true, fontSize = 11 });
+                    EditorGUILayout.Space();
+                    _materialsToReplaceList.DoLayoutList();
+                }
 
                 // TODO: implement parameter driver editor
                 if (false)
@@ -268,12 +287,12 @@ namespace dog.miruku.inventory
                     ParameterDriverBindings.isExpanded = EditorGUILayout.Foldout(ParameterDriverBindings.isExpanded, Localization.Get("parameterDrivers"));
                     if (ParameterDriverBindings.isExpanded) _parameterDriverBindingsList.DoLayoutList();
                 }
-                EditorGUILayout.PropertyField(ParameterDriverBindings, new GUIContent(Localization.Get("parameterDrivers") + " (WIP)"));
+                EditorGUILayout.PropertyField(ParameterDriverBindings, new GUIContent(Localization.Get("parameterDrivers") + " (WIP)", "옷이 활성화 될 때 아바타의 파라미터를 변경하게 합니다. 기믹 등과 연동하기 좋습니다."));
 
-                EditorGUILayout.PropertyField(AdditionalAnimations, new GUIContent(Localization.Get("additionalAnimations")));
+                EditorGUILayout.PropertyField(AdditionalAnimations, new GUIContent(Localization.Get("additionalAnimations"), "활성화 시 추가 애니메이션을 재생하도록 합니다."));
 
                 if (!node.ParentIsUnique)
-                    EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority")));
+                    EditorGUILayout.PropertyField(LayerPriority, new GUIContent(Localization.Get("layerPriority"), "FX 레이어 상의 레이어 우선순위를 결정합니다. Modular Avatar와 연동됩니다."));
             }
 
             InventoryEditorUtil.Footer(node.Avatar, _avatarHierarchyFolding);

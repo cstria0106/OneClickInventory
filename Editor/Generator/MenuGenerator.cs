@@ -49,13 +49,22 @@ public class MenuGenerator
 
     private static void CreateMAMenu(InventoryNode node, Transform parent)
     {
-        if (node.HasChildren)
+        var menuItemsToInstall = node.MenuItemsToInstall.ToArray();
+        if (node.HasChildren || menuItemsToInstall.Length > 0)
         {
             var submenu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
             if (node.IsItem) AddToggleMenu(Localization.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterValue, submenu.transform);
             foreach (var child in node.Children)
             {
                 CreateMAMenu(child, submenu.transform);
+            }
+
+            if (menuItemsToInstall.Length > 0)
+            {
+                foreach (var menuItem in menuItemsToInstall)
+                {
+                    menuItem.transform.SetParent(submenu.transform);
+                }
             }
         }
         else if (node.IsItem)

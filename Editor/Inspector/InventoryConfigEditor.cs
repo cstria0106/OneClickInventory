@@ -31,6 +31,12 @@ namespace dog.miruku.inventory
 
         public override void OnInspectorGUI()
         {
+            EditorGUILayout.LabelField(
+                "이 컴포넌트로 인벤토리 루트 메뉴의 속성을 설정할 수 있습니다.",
+                new GUIStyle(EditorStyles.label) { wordWrap = true }
+            );
+            EditorGUILayout.Space();
+
             var avatar = (target as InventoryConfig).GetComponent<VRCAvatarDescriptor>();
             serializedObject.Update();
             EditorGUILayout.PropertyField(_customMenuNameProperty, new GUIContent(Localization.Get("customMenuName")));

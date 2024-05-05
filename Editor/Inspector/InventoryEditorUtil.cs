@@ -21,16 +21,17 @@ namespace dog.miruku.inventory
         private static void AvatarHierarchy(InventoryNode node, int level, AvatarHierarchyFolding folding)
         {
             if (!folding.nodesShow.ContainsKey(node.Key)) folding.nodesShow[node.Key] = false;
+            var menuItemsToInstall = node.MenuItemsToInstall.ToArray();
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.Space(level * 10, false);
-            if (node.HasChildren)
+            if (node.HasChildren || menuItemsToInstall.Length > 0)
             {
                 folding.nodesShow[node.Key] = EditorGUILayout.BeginFoldoutHeaderGroup(folding.nodesShow[node.Key], GUIContent.none, new GUIStyle(EditorStyles.foldoutHeader) { padding = new RectOffset(0, 0, 0, 0), stretchWidth = false });
             }
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.ObjectField(node.Value, typeof(Inventory), true);
             EditorGUI.EndDisabledGroup();
-            if (node.HasChildren)
+            if (node.HasChildren || menuItemsToInstall.Length > 0)
             {
                 EditorGUILayout.EndFoldoutHeaderGroup();
             }
@@ -40,6 +41,15 @@ namespace dog.miruku.inventory
                 foreach (var child in node.Children)
                 {
                     AvatarHierarchy(child, level + 1, folding);
+                }
+                foreach (var menuItem in menuItemsToInstall)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.Space((level + 1) * 10, false);
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUILayout.ObjectField(menuItem, typeof(Inventory), true);
+                    EditorGUI.EndDisabledGroup();
+                    EditorGUILayout.EndHorizontal();
                 }
             }
         }
@@ -55,6 +65,10 @@ namespace dog.miruku.inventory
 
         public static void Footer(VRCAvatarDescriptor avatar, AvatarHierarchyFolding folding)
         {
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
             EditorGUILayout.Space();
             EditorGUILayout.LabelField(Localization.Get("avatar"), HeaderStyle);
 
