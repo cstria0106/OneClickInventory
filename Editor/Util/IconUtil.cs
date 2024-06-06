@@ -30,7 +30,7 @@ namespace dog.miruku.inventory
                 clone.transform.SetParent(cloned.transform);
                 clone.SetActive(true);
             }
-            
+
             // Set the layers to the hip layers
             const int targetLayer = 21; // layer: reserved4
             ChangeLayerRecursively(cloned, targetLayer);
@@ -102,7 +102,7 @@ namespace dog.miruku.inventory
                     }
                 }
             }
-            
+
             var size = Mathf.Max(maxX - minX, maxY - minY);
             if (size < 0)
             {
@@ -128,7 +128,7 @@ namespace dog.miruku.inventory
             importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
-        
+
         private static void ChangeLayerRecursively(GameObject gameObject, int layer)
         {
             gameObject.layer = layer;
@@ -141,8 +141,8 @@ namespace dog.miruku.inventory
         private static void MakeTexture2DClear(Texture2D tex2D, int width, int height)
         {
             var clearColors = new Color[width * height];
-            
-            int blockSize = width; 
+
+            int blockSize = width;
             Color[] initialBlock = new Color[blockSize];
             for (int i = 0; i < blockSize; i++)
             {
