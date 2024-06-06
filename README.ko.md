@@ -32,7 +32,7 @@
 |---|---|
 |<img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/a7913ee7-17ec-4dce-adf0-fed6ef04d0aa"></img>|<img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/3611be85-cfde-404a-ab67-5a4a53ff26be"></img>
 
-### 고마운 사람
+### 도와준 사람
 |[dangchongfriend (Stulta-Amiko)](https://github.com/Stulta-Amiko)|
 |---|
 |<img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/d26e1d65-a45e-444c-b202-f0aaafa5dab4"></img>|
