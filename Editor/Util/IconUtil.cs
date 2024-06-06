@@ -30,6 +30,10 @@ namespace dog.miruku.inventory
                 clone.transform.SetParent(cloned.transform);
                 clone.SetActive(true);
             }
+            
+            // Set the layers to the hip layers
+            const int targetLayer = 21; // layer: reserved4
+            ChangeLayerRecursively(cloned, targetLayer);
 
             // Setup camera
             cloned.transform.position = Vector3.zero;
@@ -37,6 +41,7 @@ namespace dog.miruku.inventory
             var camera = cameraObject.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.Nothing;
             camera.nearClipPlane = 0.00001f;
+            camera.cullingMask = 2 << (targetLayer - 1);
 
             // Calculate bound
             var boundList = cloned.GetComponentsInChildren<Renderer>().Select<Renderer, Bounds?>(e =>
@@ -61,8 +66,7 @@ namespace dog.miruku.inventory
             var minDistance = (maxExtent) / Mathf.Sin(Mathf.Deg2Rad * camera.fieldOfView / 2.0f);
             var center = bounds.center;
 
-            cloned.transform.position = new Vector3(5000, 5000, 5000);
-            camera.transform.position = center + new Vector3(5000, 5000, 5000) + Vector3.forward * minDistance;
+            camera.transform.position = center + cloned.transform.position + Vector3.forward * minDistance;
 
             var captureWidth = 2048;
             var captureHeight = 2048;
@@ -123,6 +127,15 @@ namespace dog.miruku.inventory
             importer.alphaIsTransparency = true;
             importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+        
+        private static void ChangeLayerRecursively(GameObject gameObject, int layer)
+        {
+            gameObject.layer = layer;
+            foreach (Transform child in gameObject.transform)
+            {
+                ChangeLayerRecursively(child.gameObject, layer);
+            }
         }
 
         private static void MakeTexture2DClear(Texture2D tex2D, int width, int height)
