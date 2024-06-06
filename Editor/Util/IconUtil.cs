@@ -98,18 +98,19 @@ namespace dog.miruku.inventory
                     }
                 }
             }
-
-            int centerX = (minX + maxX) / 2, centerY = (minY + maxY) / 2;
+            
             var size = Mathf.Max(maxX - minX, maxY - minY);
             if (size < 0)
             {
                 size = 1;
             }
-            var pixels = image.GetPixels(centerX - size / 2, centerY - size / 2, size, size);
-            var clippedIcon = new Texture2D(size, size, TextureFormat.ARGB32, false);
-            clippedIcon.SetPixels(pixels);
-            clippedIcon.Apply();
 
+            int croppedSizeX = maxX - minX, croppedSizeY = maxY - minY;
+            var croppedPixels = image.GetPixels(minX, minY, croppedSizeX, croppedSizeY);
+            var clippedIcon = new Texture2D(size, size, TextureFormat.ARGB32, false);
+            MakeTexture2DClear(clippedIcon, size, size);
+            clippedIcon.SetPixels(size / 2 - croppedSizeX / 2, size / 2 - croppedSizeY / 2, croppedSizeX, croppedSizeY, croppedPixels);
+            clippedIcon.Apply();
 
             // Resize and save
             var resizedIcon = ResizeTexture(clippedIcon, 256, 256);
@@ -124,5 +125,28 @@ namespace dog.miruku.inventory
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
+        private static void MakeTexture2DClear(Texture2D tex2D, int width, int height)
+        {
+            var clearColors = new Color[width * height];
+            
+            int blockSize = width; 
+            Color[] initialBlock = new Color[blockSize];
+            for (int i = 0; i < blockSize; i++)
+            {
+                initialBlock[i] = Color.clear;
+            }
+
+            int remaining = clearColors.Length;
+            int copyPos = 0;
+            while (remaining > 0)
+            {
+                int copyLength = Mathf.Min(blockSize, remaining);
+                System.Array.Copy(initialBlock, 0, clearColors, copyPos, copyLength);
+                remaining -= copyLength;
+                copyPos += copyLength;
+            }
+
+            tex2D.SetPixels(clearColors);
+        }
     }
 }
