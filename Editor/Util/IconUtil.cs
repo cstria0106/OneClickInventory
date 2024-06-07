@@ -44,6 +44,11 @@ namespace dog.miruku.inventory
             camera.cullingMask = 2 << (targetLayer - 1);
 
             // Calculate bound
+            foreach (var renderer in cloned.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                renderer.updateWhenOffscreen = true; // Force update for SkinnedMeshRenderer
+            }
+            
             var boundList = cloned.GetComponentsInChildren<Renderer>().Select<Renderer, Bounds?>(e =>
             {
                 if (e.TryGetComponent(out SkinnedMeshRenderer renderer))
