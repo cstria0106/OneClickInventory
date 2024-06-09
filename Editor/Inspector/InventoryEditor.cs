@@ -196,7 +196,7 @@ namespace dog.miruku.inventory
         public override void OnInspectorGUI()
         {
             EditorGUILayout.LabelField(
-                "이 컴포넌트가 있는 오브젝트는 인벤토리 혹은 아이템으로 설정됩니다.",
+                "이 컴포넌트가 있는 오브젝트는 인벤토리 혹은 아이템으로 설정됩니다. 속성 이름에 마우스를 대서 설명을 볼 수 있습니다.",
                 new GUIStyle(EditorStyles.label) { wordWrap = true }
             );
             EditorGUILayout.Space();
