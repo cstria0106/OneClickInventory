@@ -74,7 +74,7 @@ public class MenuGenerator
             return AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterValue, parent);
         }
 
-        return null;
+        return AddSubmenu(node.Value.Name, node.Value.Icon, parent);
     }
 
     private static Dictionary<string, ParameterConfig> GetMAParameterConfigs(InventoryNode node, Dictionary<string, ParameterConfig> configs = null)
