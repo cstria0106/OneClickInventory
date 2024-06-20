@@ -10,7 +10,7 @@ namespace dog.miruku.inventory
     {
         private static void ClearComponents<T>(Transform t) where T : Component
         {
-            foreach (var e in t.GetComponentsInChildren<T>())
+            foreach (var e in t.GetComponentsInChildren<T>(true))
             {
                 Object.DestroyImmediate(e);
             }
