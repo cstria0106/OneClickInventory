@@ -1,23 +1,16 @@
-<a href="https://inventory.goorm.me"><img src="https://github.com/cstria0106/OneClickInventory/assets/11474150/927d3500-e3e9-4566-94e1-c1b743adc2dc" style="width: 500px;"></a>
+This tool allows create VRChat inventory without any knowledge of Unity animation.
 
-[English](https://github.com/cstria0106/OneClickInventory/blob/main/README.md) | [Korean](https://github.com/cstria0106/OneClickInventory/blob/main/README.ko.md)
+유니티 애니메이션에 대한 지식 없이 VRChat 옷장 시스템을 만들 수 있습니다.
 
-- This plugin allows create VRChat inventory without any knowledge of Unity animation.
-- Provides way to create inventory in non-destructive way thank to [Non-Destructive Framework](https://github.com/bdunderscore/ndmf).
+### Documentation
 
-### Installation
-
-- [Add to VPM (CreatorCompanion)](https://cstria0106.github.io/vpm-repos/)
-- [Download unitypackage from releases](https://github.com/cstria0106/OneClickInventory/releases)
+https://inventory.goorm.me
 
 ### Features
 
-- Can toggle/select items with generated fx animation, animator controller, parameters, menu
+- Simple settings for inventory system
+- Features for advanced use-case
 - Automatically generate icon
-
-### How To Use
-
-Please refer to this [page](https://github.com/cstria0106/OneClickInventory/blob/main/docs/how-to-use.md).
 
 ### Licenses
 
@@ -29,12 +22,21 @@ All other files are under MIT License.
 
 ### Author / Contributors
 
-| [goorm_OwO (cstria0106)](https://github.com/cstria0106)                                                                              | [SnowyWalk (SnowyWalk)](https://github.com/SnowyWalk)                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| <img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/a7913ee7-17ec-4dce-adf0-fed6ef04d0aa"></img> | <img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/3611be85-cfde-404a-ab67-5a4a53ff26be"></img> |
+<table>
+<tbody>
+<tr>
+    <td align="center" valign="top" width="20%"><a href="https://github.com/cstria0106"><img src="https://github.com/cstria0106/OneClickInventory/assets/11474150/a7913ee7-17ec-4dce-adf0-fed6ef04d0aa" width="128px"><br/><sub>goorm_OwO</sub></a></td>
+    <td align="center" valign="top" width="20%"><a href="https://github.com/SnowyWalk"><img src="https://github.com/cstria0106/OneClickInventory/assets/11474150/3611be85-cfde-404a-ab67-5a4a53ff26be" width="128px"><br/><sub>SnowyWalk</sub></a></td>
+</tr>
+</tbody>
+</table>
 
 ### Special Thanks
 
-| [dangchongfriend (Stulta-Amiko)](https://github.com/Stulta-Amiko)                                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------ |
-| <img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/d26e1d65-a45e-444c-b202-f0aaafa5dab4"></img> |
+<table>
+<tbody>
+<tr>
+    <td align="center" valign="top" width="20%"><a href="https://github.com/Stulta-Amiko"><img src="https://github.com/cstria0106/OneClickInventory/assets/11474150/d26e1d65-a45e-444c-b202-f0aaafa5dab4" width="128px"><br/><sub>dangchongfriend</sub></a></td>
+</tr>
+</tbody>
+</table>
