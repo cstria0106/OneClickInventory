@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkone_click_inventory=self.webpackChunkone_click_inventory||[]).push([[858],{5516:e=>{e.exports=JSON.parse('{"name":"docusaurus-plugin-content-blog","id":"default"}')}}]);

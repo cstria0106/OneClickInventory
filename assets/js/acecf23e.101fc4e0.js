@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkone_click_inventory=self.webpackChunkone_click_inventory||[]).push([[903],{1912:e=>{e.exports=JSON.parse('{"blogBasePath":"/blog","blogTitle":"Blog"}')}}]);
