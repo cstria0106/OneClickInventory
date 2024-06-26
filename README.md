@@ -1,4 +1,4 @@
-<img src="https://github.com/cstria0106/OneClickInventory/assets/11474150/927d3500-e3e9-4566-94e1-c1b743adc2dc" style="width: 500px;">
+<a href="https://inventory.goorm.me"><img src="https://github.com/cstria0106/OneClickInventory/assets/11474150/927d3500-e3e9-4566-94e1-c1b743adc2dc" style="width: 500px;"></a>
 
 [English](https://github.com/cstria0106/OneClickInventory/blob/main/README.md) | [Korean](https://github.com/cstria0106/OneClickInventory/blob/main/README.ko.md)
 
@@ -28,13 +28,13 @@ Some icon assets are created by Freepik of Flaticon.
 All other files are under MIT License.
 
 ### Author / Contributors
-|[goorm_OwO (cstria0106)](https://github.com/cstria0106)|[SnowyWalk (SnowyWalk)](https://github.com/SnowyWalk)|
-|---|---|
-|<img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/a7913ee7-17ec-4dce-adf0-fed6ef04d0aa"></img>|<img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/3611be85-cfde-404a-ab67-5a4a53ff26be"></img>
+
+| [goorm_OwO (cstria0106)](https://github.com/cstria0106)                                                                              | [SnowyWalk (SnowyWalk)](https://github.com/SnowyWalk)                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/a7913ee7-17ec-4dce-adf0-fed6ef04d0aa"></img> | <img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/3611be85-cfde-404a-ab67-5a4a53ff26be"></img> |
 
 ### Special Thanks
-|[dangchongfriend (Stulta-Amiko)](https://github.com/Stulta-Amiko)|
-|---|
-|<img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/d26e1d65-a45e-444c-b202-f0aaafa5dab4"></img>|
 
-
+| [dangchongfriend (Stulta-Amiko)](https://github.com/Stulta-Amiko)                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------ |
+| <img width="256px" src="https://github.com/cstria0106/OneClickInventory/assets/11474150/d26e1d65-a45e-444c-b202-f0aaafa5dab4"></img> |
