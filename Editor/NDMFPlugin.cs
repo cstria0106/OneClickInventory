@@ -27,6 +27,7 @@ namespace dog.miruku.inventory
 
             InPhase(BuildPhase.Generating)
                 .BeforePlugin("nadena.dev.modular-avatar")
+                .BeforePlugin("ShellProtectorNDMFPlugin")
                 .Run("Generating inventory", ctx =>
             {
                 Generator.Generate(ctx.AvatarDescriptor);
