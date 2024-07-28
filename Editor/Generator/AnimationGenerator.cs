@@ -28,7 +28,7 @@ namespace dog.miruku.inventory
                     var clips = GenerateNonUniqueClips(node);
                     foreach (var child in node.ChildItems)
                     {
-                        controllers[GenerateNonUniqueAnimatorController(child, clips[child].Item1, clips[child].Item2)] = 0;
+                        controllers[GenerateNonUniqueAnimatorController(child, clips[child].Item1, clips[child].Item2)] = child.Value.LayerPriority;
                     }
                 }
             }
