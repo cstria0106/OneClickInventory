@@ -13,6 +13,7 @@ namespace dog.miruku.inventory
         private static readonly string _fallbackLanguage = "en";
 
         private static string _language = null;
+
         public static string Language
         {
             get => _language ?? EditorPrefs.GetString("one-click-inventory.language", _fallbackLanguage);
@@ -24,11 +25,13 @@ namespace dog.miruku.inventory
             }
         }
 
-        private static readonly Dictionary<string, Dictionary<string, string>> _cache = new Dictionary<string, Dictionary<string, string>>();
+        private static readonly Dictionary<string, Dictionary<string, string>> _cache =
+            new Dictionary<string, Dictionary<string, string>>();
 
         public static List<(string, string)> Languages
         {
-            get => new List<(string, string)>() {
+            get => new List<(string, string)>()
+            {
                 ("en", "English"),
                 ("ko", "한국어"),
                 ("zh-Hant", "繁體中文"),
