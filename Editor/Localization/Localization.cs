@@ -31,7 +31,7 @@ namespace dog.miruku.inventory
             get => new List<(string, string)>() {
                 ("en", "English"),
                 ("ko", "한국어"),
-                ("zho", "繁體中文"),
+                ("zh-Hant", "繁體中文"),
             };
         }
 
