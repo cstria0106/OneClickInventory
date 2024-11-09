@@ -53,14 +53,10 @@ namespace dog.miruku.inventory.runtime
         // properties as a inventory
         [SerializeField] private bool _isUnique;
 
-        public bool IsUnique
-        {
-            get => _isUnique;
-            set => _isUnique = value;
-        }
+        public bool IsUnique => _isUnique;
 
         // properties as a item
-        [SerializeField] bool _default;
+        [SerializeField] private bool _default;
 
         public bool Default
         {

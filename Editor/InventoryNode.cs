@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using dog.miruku.inventory.runtime;
+using nadena.dev.modular_avatar.core;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
@@ -69,7 +70,7 @@ namespace dog.miruku.inventory
             Children = ResolveChildren(value.transform, avatar, this);
         }
 
-        public static List<InventoryNode> GetRootNodes(VRCAvatarDescriptor avatar)
+        public static List<InventoryNode> ResolveRootNodes(VRCAvatarDescriptor avatar)
         {
             return ResolveChildren(avatar.transform, avatar);
         }
@@ -81,8 +82,9 @@ namespace dog.miruku.inventory
                 : node.Children.Select(child => FindNodeByValue(child, value)).FirstOrDefault(found => found != null);
         }
 
-        public static InventoryNode FindNodeByValue(VRCAvatarDescriptor avatar, Inventory value) => GetRootNodes(avatar)
-            .Select(e => FindNodeByValue(e, value)).FirstOrDefault(e => e != null);
+        public static InventoryNode FindNodeByValue(VRCAvatarDescriptor avatar, Inventory value) =>
+            ResolveRootNodes(avatar)
+                .Select(e => FindNodeByValue(e, value)).FirstOrDefault(e => e != null);
 
 
         private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar,

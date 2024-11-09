@@ -21,7 +21,7 @@ namespace dog.miruku.inventory
         private static string AvatarInventoryHierarchyToString(VRCAvatarDescriptor avatar)
         {
             var s = "";
-            foreach (var node in InventoryNode.GetRootNodes(avatar))
+            foreach (var node in InventoryNode.ResolveRootNodes(avatar))
             {
                 s += InventoryNodeToString(node);
             }

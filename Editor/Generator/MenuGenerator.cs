@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using dog.miruku.inventory;
 using nadena.dev.modular_avatar.core;
+using nadena.dev.modular_avatar.core.menu;
+using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -18,7 +20,7 @@ namespace dog.miruku.inventory
             menuObject.transform.SetParent(parent);
             var menu = menuObject.AddComponent<ModularAvatarMenuItem>();
 
-            menu.Control = new VRCExpressionsMenu.Control()
+            menu.Control = new VRCExpressionsMenu.Control
             {
                 name = name,
                 icon = icon,
@@ -53,120 +55,86 @@ namespace dog.miruku.inventory
 
         private static ModularAvatarMenuItem CreateMaMenu(InventoryNode node, Transform parent)
         {
+            // If MAMenuInstaller is found, set the parent to the avatar
+            var menuInstaller = node.Value.GetComponent<ModularAvatarMenuInstaller>();
+            if (menuInstaller != null)
+            {
+                parent = node.Avatar.transform;
+            }
+
+            ModularAvatarMenuItem menu;
+
             var menuItemsToInstall = node.MenuItemsToInstall.ToArray();
 
-            // If the node is a leaf node
-            if (!node.HasChildren && menuItemsToInstall.Length <= 0)
-                return node.IsItem
-                    ? AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterValue, parent)
-                    : AddSubmenu(node.Value.Name, node.Value.Icon, parent);
+            // If it should be generated as a submenu
+            if (node.IsInventory || menuItemsToInstall.Any())
+            {
+                menu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
+                if (node.IsItem)
+                    AddToggleMenu(L.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterValue,
+                        menu.transform);
+            }
+            // Else if it should be generated as a toggle menu
+            else if (node.IsItem)
+            {
+                menu = AddToggleMenu(node.Value.Name, node.Value.Icon, node.ParameterName, node.ParameterValue, parent);
+            }
+            // Else don't create any menu
+            else return null;
 
-            // Create a submenu
-            var submenu = AddSubmenu(node.Value.Name, node.Value.Icon, parent);
+            // Copy menu installer to generated menu object
+            if (menuInstaller != null)
+            {
+                var newMenuInstaller = menu.gameObject.AddComponent<ModularAvatarMenuInstaller>();
+                newMenuInstaller.menuToAppend = menuInstaller.menuToAppend;
+                newMenuInstaller.installTargetMenu = menuInstaller.installTargetMenu;
 
-            // Add a toggle menu if the node is an item
-            if (node.IsItem)
-                AddToggleMenu(L.Get("enable"), node.Value.Icon, node.ParameterName, node.ParameterValue,
-                    submenu.transform);
+                // Replace all reference to the original installer with the new one
+                foreach (var component in node.Avatar.GetComponentsInChildren<MenuSourceComponent>())
+                {
+                    if (component.GetType().Name == "ModularAvatarMenuInstallTarget")
+                    {
+                        // Set serialized field "installer" to the new installer
+                        component.GetType().GetField("installer")?.SetValue(component, newMenuInstaller);
+                        EditorUtility.SetDirty(component);
+                    }
+                }
+
+                // Remove original installer
+                Object.DestroyImmediate(menuInstaller);
+            }
 
             // Recursively create children
             foreach (var child in node.Children)
             {
-                CreateMaMenu(child, submenu.transform);
+                CreateMaMenu(child, menu.transform);
             }
 
             // Add menus installed by InventoryMenuInstaller
-            foreach (var menuItem in menuItemsToInstall) menuItem.transform.SetParent(submenu.transform);
+            foreach (var menuItem in menuItemsToInstall) menuItem.transform.SetParent(menu.transform);
 
-            return submenu;
+            return menu;
         }
 
-        private static Dictionary<string, ParameterConfig> GetMaParameterConfigs(InventoryNode node,
-            Dictionary<string, ParameterConfig> configs = null)
+        public static void Generate(
+            InventoryNode rootNode,
+            Transform menuParent
+        )
         {
-            configs ??= new Dictionary<string, ParameterConfig>();
+            if (!rootNode.IsRoot) throw new System.Exception("Invalid root node");
 
-            if (node.IsItem)
+            // If node is set to be installed in the root menu
+            if (rootNode.Value.InstallMenuInRoot)
             {
-                configs[node.ParameterName] = new ParameterConfig
-                {
-                    nameOrPrefix = node.ParameterName,
-                    syncType = ParameterSyncType.Int,
-                    defaultValue = 0,
-                    saved = false,
-                    localOnly = true
-                };
+                var menuItem = CreateMaMenu(rootNode, rootNode.Avatar.transform);
+                if (menuItem == null) return;
 
-                configs[AnimationGenerator.GetSyncedParameterName(node.ParameterName)] = new ParameterConfig
-                {
-                    nameOrPrefix = AnimationGenerator.GetSyncedParameterName(node.ParameterName),
-                    syncType = ParameterSyncType.Bool,
-                    defaultValue = 0,
-                    saved = false,
-                    localOnly = true
-                };
-
-                foreach (var (name, defaultValue) in AnimationGenerator.Encode(node.ParameterName, node.ParameterBits,
-                             node.ParameterDefault))
-                {
-                    var saved = node.ParentIsUnique ? node.Parent.Value.Saved : node.Value.Saved;
-
-                    configs[name] =
-                        new ParameterConfig
-                        {
-                            nameOrPrefix = name,
-                            syncType = ParameterSyncType.Bool,
-                            defaultValue = defaultValue,
-                            saved = saved,
-                            localOnly = false
-                        };
-                }
-            }
-
-            return node.Children.Aggregate(configs, (current, child) => GetMaParameterConfigs(child, current));
-        }
-
-        private static void CreateMaParameters(InventoryNode node)
-        {
-            var parametersObject = new GameObject("Parameters");
-            parametersObject.transform.SetParent(node.Root.Value.transform, false);
-            var parameters = parametersObject.AddComponent<ModularAvatarParameters>();
-            var configs = GetMaParameterConfigs(node);
-            parameters.parameters = configs.Values.ToList();
-        }
-
-        private static void CreateMaMergeAnimator(Dictionary<AnimatorController, int> controllers, GameObject parent)
-        {
-            // Add merge animator
-            foreach (var entry in controllers)
-            {
-                var mergeAnimator = parent.AddComponent<ModularAvatarMergeAnimator>();
-                mergeAnimator.animator = entry.Key;
-                mergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
-                mergeAnimator.deleteAttachedAnimator = true;
-                mergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
-                mergeAnimator.matchAvatarWriteDefaults = false;
-                mergeAnimator.layerPriority = entry.Value;
-            }
-        }
-
-        public static void Generate(InventoryNode node, Dictionary<AnimatorController, int> controllers,
-            Transform menuParent)
-        {
-            var mergeAnimatorParent = new GameObject("MergeAnimator");
-            mergeAnimatorParent.transform.SetParent(node.Root.Value.transform, false);
-            CreateMaMergeAnimator(controllers, mergeAnimatorParent);
-            CreateMaParameters(node);
-            if (node.IsRoot && node.Value.InstallMenuInRoot)
-            {
-                var menuItem = CreateMaMenu(node, node.Avatar.transform);
                 var installer = menuItem.gameObject.AddComponent<ModularAvatarMenuInstaller>();
-                installer.menuToAppend = node.Avatar.expressionsMenu;
+                installer.menuToAppend = rootNode.Avatar.expressionsMenu;
+                return;
             }
-            else
-            {
-                CreateMaMenu(node, menuParent);
-            }
+
+            CreateMaMenu(rootNode, menuParent);
         }
     }
 }

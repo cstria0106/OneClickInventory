@@ -63,7 +63,7 @@ namespace dog.miruku.inventory
 
         private static void AvatarHierarchy(VRCAvatarDescriptor avatar, AvatarHierarchyFolding folding)
         {
-            var rootNodes = InventoryNode.GetRootNodes(avatar);
+            var rootNodes = InventoryNode.ResolveRootNodes(avatar);
             foreach (var node in rootNodes)
             {
                 AvatarHierarchy(node, 0, folding);
@@ -85,7 +85,7 @@ namespace dog.miruku.inventory
                 AvatarHierarchy(avatar, folding);
             }
 
-            var usedParameterMemory = InventoryNode.GetRootNodes(avatar).Select(e => e.UsedParameterMemory).Sum();
+            var usedParameterMemory = InventoryNode.ResolveRootNodes(avatar).Select(e => e.UsedParameterMemory).Sum();
             EditorGUILayout.LabelField($"{L.Get("usedParameterMemory")} : {usedParameterMemory}");
             EditorGUILayout.Space();
             EditorGUILayout.LabelField(L.Get("etc"), HeaderStyle);
