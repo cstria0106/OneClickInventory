@@ -1,61 +1,54 @@
-﻿
-using System.Linq;
-using dog.miruku.inventory;
+﻿using System.Linq;
 using dog.miruku.inventory.runtime;
 using nadena.dev.modular_avatar.core;
-using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
-public class Generator
+namespace dog.miruku.inventory
 {
-    public static void Generate(VRCAvatarDescriptor avatar)
+    public abstract class Generator
     {
-        var deprecatedItems = avatar.GetComponentsInChildren<Deprecated>(true);
-        if (deprecatedItems.Length > 0)
+        public static void Generate(VRCAvatarDescriptor avatar)
         {
-            EditorUtility.DisplayDialog("ClosetItem is deprecated", "ClosetItem is deprecated. Please convert into Inventory component. ClosetItem 컴포넌트는 더이상 사용되지 않습니다. Inventory 컴포넌트로 변환해주세요.", "OK");
-            throw new System.Exception("ClosetItem is deprecated. Please convert into Inventory component. ClosetItem 컴포넌트는 더이상 사용되지 않습니다. Inventory 컴포넌트로 변환해주세요");
-        }
-
-        // get avatar inventory config
-        string menuName = "Inventory";
-        Texture2D menuIcon = null;
-        if (avatar.TryGetComponent<InventoryConfig>(out var config))
-        {
-            menuName = config.CustomMenuName;
-            menuIcon = config.CustomIcon;
-        }
-
-        var rootNodes = InventoryNode.GetRootNodes(avatar);
-        GameObject menuObject = new GameObject(menuName);
-        menuObject.transform.SetParent(avatar.transform);
-
-        // Create root menu when there are non-root menu items
-        if (rootNodes.Where(e => !e.Value.InstallMenuInRoot).Count() > 0)
-        {
-            // create menu installer
-            var menuInstaller = menuObject.AddComponent<ModularAvatarMenuInstaller>();
-            menuInstaller.menuToAppend = avatar.expressionsMenu;
-
-            // create root menu
-            var menuItem = menuObject.AddComponent<ModularAvatarMenuItem>();
-            menuItem.Control = new VRCExpressionsMenu.Control()
+            // get avatar inventory config
+            var menuName = "Inventory";
+            Texture2D menuIcon = null;
+            if (avatar.TryGetComponent<InventoryConfig>(out var config))
             {
-                type = VRCExpressionsMenu.Control.ControlType.SubMenu,
-                name = menuName,
-                icon = menuIcon
-            };
-            menuItem.MenuSource = SubmenuSource.Children;
-        }
+                menuName = config.CustomMenuName;
+                menuIcon = config.CustomIcon;
+            }
+
+            var rootNodes = InventoryNode.GetRootNodes(avatar);
+            var menuObject = new GameObject(menuName);
+            menuObject.transform.SetParent(avatar.transform);
+
+            // Create root menu when there are non-root menu items
+            if (rootNodes.Any(e => !e.Value.InstallMenuInRoot))
+            {
+                // create menu installer
+                var menuInstaller = menuObject.AddComponent<ModularAvatarMenuInstaller>();
+                menuInstaller.menuToAppend = avatar.expressionsMenu;
+
+                // create root menu
+                var menuItem = menuObject.AddComponent<ModularAvatarMenuItem>();
+                menuItem.Control = new VRCExpressionsMenu.Control()
+                {
+                    type = VRCExpressionsMenu.Control.ControlType.SubMenu,
+                    name = menuName,
+                    icon = menuIcon
+                };
+                menuItem.MenuSource = SubmenuSource.Children;
+            }
 
 
-        // generate inventories
-        foreach (var node in rootNodes)
-        {
-            var controllers = AnimationGenerator.GenerateControllers(node);
-            MenuGenerator.Generate(node, controllers, menuObject.transform);
+            // generate inventories
+            foreach (var node in rootNodes)
+            {
+                var controllers = AnimationGenerator.GenerateControllers(node);
+                MenuGenerator.Generate(node, controllers, menuObject.transform);
+            }
         }
     }
 }

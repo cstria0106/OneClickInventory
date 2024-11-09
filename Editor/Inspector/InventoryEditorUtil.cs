@@ -9,25 +9,30 @@ namespace dog.miruku.inventory
 {
     public class AvatarHierarchyFolding
     {
-        public bool show = false;
-        public Dictionary<string, bool> nodesShow = new Dictionary<string, bool>();
+        public bool Show;
+        public readonly Dictionary<string, bool> NodesShow = new();
     }
-    public class InventoryEditorUtil
+
+    public abstract class InventoryEditorUtil
     {
         private static int SelectedLanguage { get; set; }
 
-        public static GUIStyle HeaderStyle => new GUIStyle(EditorStyles.boldLabel);
+        public static GUIStyle HeaderStyle => new(EditorStyles.boldLabel);
 
         private static void AvatarHierarchy(InventoryNode node, int level, AvatarHierarchyFolding folding)
         {
-            if (!folding.nodesShow.ContainsKey(node.Key)) folding.nodesShow[node.Key] = false;
+            folding.NodesShow.TryAdd(node.Key, false);
             var menuItemsToInstall = node.MenuItemsToInstall.ToArray();
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.Space(level * 10, false);
             if (node.HasChildren || menuItemsToInstall.Length > 0)
             {
-                folding.nodesShow[node.Key] = EditorGUILayout.BeginFoldoutHeaderGroup(folding.nodesShow[node.Key], GUIContent.none, new GUIStyle(EditorStyles.foldoutHeader) { padding = new RectOffset(0, 0, 0, 0), stretchWidth = false });
+                folding.NodesShow[node.Key] = EditorGUILayout.BeginFoldoutHeaderGroup(folding.NodesShow[node.Key],
+                    GUIContent.none,
+                    new GUIStyle(EditorStyles.foldoutHeader)
+                        {padding = new RectOffset(0, 0, 0, 0), stretchWidth = false});
             }
+
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.ObjectField(node.Value, typeof(Inventory), true);
             EditorGUI.EndDisabledGroup();
@@ -35,13 +40,15 @@ namespace dog.miruku.inventory
             {
                 EditorGUILayout.EndFoldoutHeaderGroup();
             }
+
             EditorGUILayout.EndHorizontal();
-            if (folding.nodesShow[node.Key])
+            if (folding.NodesShow[node.Key])
             {
                 foreach (var child in node.Children)
                 {
                     AvatarHierarchy(child, level + 1, folding);
                 }
+
                 foreach (var menuItem in menuItemsToInstall)
                 {
                     EditorGUILayout.BeginHorizontal();
@@ -70,24 +77,25 @@ namespace dog.miruku.inventory
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField(Localization.Get("avatar"), HeaderStyle);
+            EditorGUILayout.LabelField(L.Get("avatar"), HeaderStyle);
 
-            folding.show = EditorGUILayout.Foldout(folding.show, Localization.Get("avatarHierarchy"));
-            if (folding.show)
+            folding.Show = EditorGUILayout.Foldout(folding.Show, L.Get("avatarHierarchy"));
+            if (folding.Show)
             {
                 AvatarHierarchy(avatar, folding);
             }
 
             var usedParameterMemory = InventoryNode.GetRootNodes(avatar).Select(e => e.UsedParameterMemory).Sum();
-            EditorGUILayout.LabelField($"{Localization.Get("usedParameterMemory")} : {usedParameterMemory}");
+            EditorGUILayout.LabelField($"{L.Get("usedParameterMemory")} : {usedParameterMemory}");
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField(Localization.Get("etc"), HeaderStyle);
-            var selectedLanguage = EditorGUILayout.Popup(Localization.Get("language"), SelectedLanguage, Localization.Languages.Select(e => e.Item2).ToArray());
+            EditorGUILayout.LabelField(L.Get("etc"), HeaderStyle);
+            var selectedLanguage = EditorGUILayout.Popup(L.Get("language"), SelectedLanguage,
+                L.Languages.Select(e => e.Item2).ToArray());
             if (selectedLanguage != SelectedLanguage)
             {
                 SelectedLanguage = selectedLanguage;
-                Localization.Language = Localization.Languages[SelectedLanguage].Item1;
-                Localization.Get(Localization.Languages[SelectedLanguage].Item1);
+                L.Language = L.Languages[SelectedLanguage].Item1;
+                L.Get(L.Languages[SelectedLanguage].Item1);
             }
         }
     }

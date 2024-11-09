@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -9,6 +8,6 @@ namespace dog.miruku.inventory.runtime
     public class InventoryMenuInstaller : MonoBehaviour, IEditorOnly
     {
         [SerializeField] private Inventory _inventory;
-        public Inventory Inventory { get => _inventory; set => _inventory = value; }
+        public Inventory Inventory => _inventory;
     }
 }

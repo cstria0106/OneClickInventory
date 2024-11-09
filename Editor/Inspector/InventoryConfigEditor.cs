@@ -16,9 +16,10 @@ namespace dog.miruku.inventory
         public void OnEnable()
         {
             var inventoryConfig = target as InventoryConfig;
-            if (!inventoryConfig.TryGetComponent<VRCAvatarDescriptor>(out _))
+            if (inventoryConfig != null && !inventoryConfig.TryGetComponent<VRCAvatarDescriptor>(out _))
             {
-                EditorUtility.DisplayDialog("Error", "InventoryConfig must be attached to the same GameObject as VRC Avatar Descriptor.", "OK");
+                EditorUtility.DisplayDialog("Error",
+                    "InventoryConfig must be attached to the same GameObject as VRC Avatar Descriptor.", "OK");
                 DestroyImmediate(inventoryConfig);
                 return;
             }
@@ -33,19 +34,15 @@ namespace dog.miruku.inventory
         {
             EditorGUILayout.LabelField(
                 "이 컴포넌트로 인벤토리 루트 메뉴의 속성을 설정할 수 있습니다.",
-                new GUIStyle(EditorStyles.label) { wordWrap = true }
+                new GUIStyle(EditorStyles.label) {wordWrap = true}
             );
             EditorGUILayout.Space();
 
-            var avatar = (target as InventoryConfig).GetComponent<VRCAvatarDescriptor>();
+            var avatar = (target as InventoryConfig)?.GetComponent<VRCAvatarDescriptor>();
             serializedObject.Update();
-            EditorGUILayout.PropertyField(_customMenuNameProperty, new GUIContent(Localization.Get("customMenuName")));
-            EditorGUILayout.PropertyField(_customIconProperty, new GUIContent(Localization.Get("customMenuIcon")));
+            EditorGUILayout.PropertyField(_customMenuNameProperty, new GUIContent(L.Get("customMenuName")));
+            EditorGUILayout.PropertyField(_customIconProperty, new GUIContent(L.Get("customMenuIcon")));
 
-            if (GUILayout.Button("Clone and apply for test"))
-            {
-                DebugUtil.CloneAndApply(avatar);
-            }
             InventoryEditorUtil.Footer(avatar, _avatarHierarchyFolding);
             serializedObject.ApplyModifiedProperties();
         }

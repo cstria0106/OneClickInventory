@@ -19,19 +19,26 @@ namespace dog.miruku.inventory
         public InventoryNode Parent { get; }
         public IEnumerable<InventoryNode> Children { get; }
         public IEnumerable<InventoryNode> ChildItems => Children.Where(e => e.IsItem);
-        public bool HasChildren => Children.Count() > 0;
-        public bool HasChildItems => ChildItems.Count() > 0;
+        public bool HasChildren => Children.Any();
+        public bool HasChildItems => ChildItems.Any();
         public InventoryNode Root => Parent != null ? Parent.Root : this;
         public bool IsRoot => Root == this;
-        public IEnumerable<GameObject> RelatedGameObjects => Value.GameObjects.Concat(Children.SelectMany(e => e.RelatedGameObjects));
 
-        public IEnumerable<InventoryMenuInstaller> MenuItemsToInstall => Root.Avatar.GetComponentsInChildren<InventoryMenuInstaller>(includeInactive: true).Where(e => e.Inventory == Value);
+        public IEnumerable<GameObject> RelatedGameObjects =>
+            Value.GameObjects.Concat(Children.SelectMany(e => e.RelatedGameObjects));
 
-        public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? ChildrenBits : ChildItems.Count() : 0) + Children.Select(e => e.UsedParameterMemory).Sum();
+        public IEnumerable<InventoryMenuInstaller> MenuItemsToInstall => Root.Avatar
+            .GetComponentsInChildren<InventoryMenuInstaller>(includeInactive: true).Where(e => e.Inventory == Value);
+
+        public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? ChildrenBits : ChildItems.Count() : 0) +
+                                          Children.Select(e => e.UsedParameterMemory).Sum();
 
         // as a inventory
         public bool IsInventory => HasChildItems;
-        public InventoryNode DefaultChild => Value.IsUnique ? ChildItems.Where(e => e.Value.Default).FirstOrDefault() : null;
+
+        public InventoryNode DefaultChild =>
+            Value.IsUnique ? ChildItems.FirstOrDefault(e => e.Value.Default) : null;
+
         public int MaxChildrenIndex => ChildItems.Select(e => e.Index).DefaultIfEmpty(0).Max();
         public int ChildrenBits => Mathf.CeilToInt(Mathf.Log(MaxChildrenIndex + 1, 2));
 
@@ -44,12 +51,16 @@ namespace dog.miruku.inventory
         public int ParameterBits => ParentIsUnique ? Parent.ChildrenBits : 1;
         public int ParameterDefault => ParentIsUnique ? 0 : Value.Default ? 1 : 0;
 
-        public InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index, Dictionary<string, int> nameCount)
+        private InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index,
+            Dictionary<string, int> nameCount)
         {
-            if (nameCount.ContainsKey(value.Name)) nameCount[value.Name] += 1; else nameCount[value.Name] = 1;
+            if (!nameCount.TryAdd(value.Name, 1)) nameCount[value.Name] += 1;
+
             var name = nameCount[value.Name] > 1 ? $"{value.Name}_{nameCount[value.Name]}" : value.Name;
 
-            Key = parent != null ? $"{parent.Key}/{Util.EscapeStateMachineName(name)}" : $"OCInv/{Util.EscapeStateMachineName(name)}";
+            Key = parent != null
+                ? $"{parent.Key}/{Util.EscapeStateMachineName(name)}"
+                : $"OCInv/{Util.EscapeStateMachineName(name)}";
             Index = index;
             Value = value;
 
@@ -65,25 +76,23 @@ namespace dog.miruku.inventory
 
         private static InventoryNode FindNodeByValue(InventoryNode node, Inventory value)
         {
-            if (node.Value == value) return node;
-            foreach (var child in node.Children)
-            {
-                var found = FindNodeByValue(child, value);
-                if (found != null) return found;
-            }
-            return null;
+            return node.Value == value
+                ? node
+                : node.Children.Select(child => FindNodeByValue(child, value)).FirstOrDefault(found => found != null);
         }
 
-        public InventoryNode FindNodeByValue(Inventory value) => FindNodeByValue(this, value);
-        public static InventoryNode FindNodeByValue(VRCAvatarDescriptor avatar, Inventory value) => GetRootNodes(avatar).Select(e => FindNodeByValue(e, value)).Where(e => e != null).FirstOrDefault();
+        public static InventoryNode FindNodeByValue(VRCAvatarDescriptor avatar, Inventory value) => GetRootNodes(avatar)
+            .Select(e => FindNodeByValue(e, value)).FirstOrDefault(e => e != null);
 
 
-        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar, InventoryNode parent = null)
+        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar,
+            InventoryNode parent = null)
         {
             return ResolveChildren(transform, avatar, parent, new Dictionary<string, int>());
         }
 
-        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar, InventoryNode parent, Dictionary<string, int> nameCount, int index = 1)
+        private static List<InventoryNode> ResolveChildren(Transform transform, VRCAvatarDescriptor avatar,
+            InventoryNode parent, Dictionary<string, int> nameCount, int index = 1)
         {
             var children = new List<InventoryNode>();
             if (transform == null) return children;
@@ -91,7 +100,8 @@ namespace dog.miruku.inventory
             {
                 if (childTransform.TryGetComponent(out Inventory value))
                 {
-                    if (parent != null && parent.Value.IsUnique && value.Default) // Is parent unique and this node is default
+                    if (parent != null && parent.Value.IsUnique &&
+                        value.Default) // Is parent unique and this node is default
                     {
                         children.Add(new InventoryNode(avatar, parent, value, 0, nameCount));
                     }
@@ -115,6 +125,7 @@ namespace dog.miruku.inventory
                     index += resolved.Count;
                 }
             }
+
             return children;
         }
 
@@ -134,6 +145,5 @@ namespace dog.miruku.inventory
                 child.Validate();
             }
         }
-
     }
 }

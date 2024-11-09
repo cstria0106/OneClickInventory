@@ -34,55 +34,77 @@ namespace dog.miruku.inventory.runtime
     public class Inventory : MonoBehaviour, IEditorOnly
     {
         [SerializeField] private bool _installMenuInRoot;
-        public bool InstallMenuInRoot { get => _installMenuInRoot; set => _installMenuInRoot = value; }
 
-        [FormerlySerializedAs("_closetName")]
-        [SerializeField]
+        public bool InstallMenuInRoot => _installMenuInRoot;
+
+        [FormerlySerializedAs("_closetName")] [SerializeField]
         private string _name;
-        public string Name { get => _name; set => _name = value; }
+
+        public string Name => _name;
 
         [SerializeField] private Texture2D _customIcon;
-        public Texture2D Icon { get => _customIcon; set => _customIcon = value; }
+
+        public Texture2D Icon
+        {
+            get => _customIcon;
+            set => _customIcon = value;
+        }
 
         // properties as a inventory
         [SerializeField] private bool _isUnique;
-        public bool IsUnique { get => _isUnique; set => _isUnique = value; }
+
+        public bool IsUnique
+        {
+            get => _isUnique;
+            set => _isUnique = value;
+        }
 
         // properties as a item
         [SerializeField] bool _default;
-        public bool Default { get => _default; set => _default = value; }
 
-        [SerializeField] private List<GameObject> _additionalObjects = new List<GameObject>();
-        public IEnumerable<GameObject> AdditionalObjects
+        public bool Default
         {
-            get => _additionalObjects.Where(e => e != null);
-            set => _additionalObjects = value.ToList();
-        }
-        public IEnumerable<GameObject> GameObjects => new GameObject[] { gameObject }.Concat(_additionalObjects.Where(e => e != null));
-        [SerializeField] private List<AnimationClip> _additionalAnimations = new List<AnimationClip>();
-        public IEnumerable<AnimationClip> AdditionalAnimations
-        {
-            get => _additionalAnimations.Where(e => e != null);
-            set => _additionalAnimations = value.ToList();
+            get => _default;
+            set => _default = value;
         }
 
-        [SerializeField] private List<GameObject> _objectsToDisable = new List<GameObject>();
+        [SerializeField] private List<GameObject> _additionalObjects = new();
+
+        public IEnumerable<GameObject> GameObjects =>
+            new[] {gameObject}.Concat(_additionalObjects.Where(e => e != null));
+
+        [SerializeField] private List<AnimationClip> _additionalAnimations = new();
+
+        public IEnumerable<AnimationClip> AdditionalAnimations => _additionalAnimations.Where(e => e != null);
+
+        [SerializeField] private List<GameObject> _objectsToDisable = new();
         public IEnumerable<GameObject> ObjectsToDisable => _objectsToDisable.Where(e => e != null);
 
-        [SerializeField] private List<SetBlendShapeBinding> _blendShapesToChange = new List<SetBlendShapeBinding>();
-        public IEnumerable<SetBlendShapeBinding> BlendShapesToChange => _blendShapesToChange.Where(e => e.renderer != null);
+        [SerializeField] private List<SetBlendShapeBinding> _blendShapesToChange = new();
 
-        [SerializeField] private List<ReplaceMaterialBinding> _materialsToReplace = new List<ReplaceMaterialBinding>();
-        public IEnumerable<ReplaceMaterialBinding> MaterialsToReplace => _materialsToReplace.Where(e => e.renderer != null && e.from != null && e.to != null);
+        public IEnumerable<SetBlendShapeBinding> BlendShapesToChange =>
+            _blendShapesToChange.Where(e => e.renderer != null);
 
-        [SerializeField] private List<ParameterDriverBinding> _parameterDriverBindings = new List<ParameterDriverBinding>();
+        [SerializeField] private List<ReplaceMaterialBinding> _materialsToReplace = new();
+
+        public IEnumerable<ReplaceMaterialBinding> MaterialsToReplace =>
+            _materialsToReplace.Where(e => e.renderer != null && e.from != null && e.to != null);
+
+        [SerializeField] private List<ParameterDriverBinding> _parameterDriverBindings = new();
+
         public IEnumerable<ParameterDriverBinding> ParameterDriverBindings => _parameterDriverBindings;
 
-        [SerializeField] private int _layerPriority = 0;
-        public int LayerPriority { get => _layerPriority; set => _layerPriority = value; }
+        [SerializeField] private int _layerPriority;
 
-        [SerializeField] private bool _isNotItem = false;
-        public bool IsNotItem { get => _isNotItem; set => _isNotItem = value; }
+        public int LayerPriority => _layerPriority;
+
+        [SerializeField] private bool _isNotItem;
+
+        public bool IsNotItem => _isNotItem;
+
+        [SerializeField] private bool _saved = true;
+
+        public bool Saved => _saved;
 
         private void Reset()
         {

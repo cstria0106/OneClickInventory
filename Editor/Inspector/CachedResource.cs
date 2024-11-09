@@ -2,18 +2,21 @@
 using UnityEditor;
 using UnityEngine;
 
-public class CachedResource
+namespace dog.miruku.inventory
 {
-    private static readonly string _resourcesPathGuid = "7d8b3a244de977846b2055b8aed045a1";
-    private static readonly string _resourcesPathRoot = AssetDatabase.GUIDToAssetPath(_resourcesPathGuid);
-
-    private static Dictionary<string, Object> cache = new Dictionary<string, Object>();
-
-    public static T Load<T>(string path) where T : Object
+    public abstract class CachedResource
     {
-        if (cache.ContainsKey(path)) return cache[path] as T;
-        var asset = AssetDatabase.LoadAssetAtPath<T>(_resourcesPathRoot + "/" + path);
-        cache[path] = asset;
-        return asset;
+        private const string RESOURCES_PATH_GUID = "7d8b3a244de977846b2055b8aed045a1";
+        private static readonly string ResourcesPathRoot = AssetDatabase.GUIDToAssetPath(RESOURCES_PATH_GUID);
+
+        private static readonly Dictionary<string, Object> Cache = new();
+
+        public static T Load<T>(string path) where T : Object
+        {
+            if (Cache.TryGetValue(path, out var value)) return value as T;
+            var asset = AssetDatabase.LoadAssetAtPath<T>(ResourcesPathRoot + "/" + path);
+            Cache[path] = asset;
+            return asset;
+        }
     }
 }

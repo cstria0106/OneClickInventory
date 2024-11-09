@@ -22,16 +22,12 @@ namespace dog.miruku.inventory
             {
                 ClearComponents<InventoryConfig>(ctx.AvatarRootTransform);
                 ClearComponents<Inventory>(ctx.AvatarRootTransform);
-                ClearComponents<Deprecated>(ctx.AvatarRootTransform);
             });
 
             InPhase(BuildPhase.Generating)
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .BeforePlugin("ShellProtectorNDMFPlugin")
-                .Run("Generating inventory", ctx =>
-            {
-                Generator.Generate(ctx.AvatarDescriptor);
-            });
+                .Run("Generating inventory", ctx => { Generator.Generate(ctx.AvatarDescriptor); });
         }
     }
 }

@@ -8,9 +8,9 @@ namespace dog.miruku.inventory.runtime
     public class InventoryConfig : MonoBehaviour, IEditorOnly
     {
         [SerializeField] private string _customMenuName;
-        public string CustomMenuName { get => _customMenuName; }
+        public string CustomMenuName => _customMenuName;
         [SerializeField] private Texture2D _customIcon;
-        public Texture2D CustomIcon { get => _customIcon; }
+        public Texture2D CustomIcon => _customIcon;
 
         private void Reset()
         {
