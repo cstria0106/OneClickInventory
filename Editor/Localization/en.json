@@ -28,5 +28,6 @@
   "avatarHierarchy": "Avatar inventory hierarchy",
   "usedParameterMemory": "Used parameter memory",
   "isNotItem": "Set this object as not item",
-  "installMenuInRoot": "Install menu in root"
+  "installMenuInRoot": "Install menu in root",
+  "integrateMenuInstaller": "Integrate with MA Menu Installer"
 }

@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using dog.miruku.inventory.runtime;
 using System.Linq;
+using nadena.dev.modular_avatar.core;
 using UnityEditorInternal;
 using VRC.SDKBase;
 
@@ -28,6 +29,7 @@ namespace dog.miruku.inventory
         private SerializedProperty ParameterDriverBindings { get; set; }
         private SerializedProperty LayerPriority { get; set; }
         private SerializedProperty Save { get; set; }
+        private SerializedProperty IntegrateMenuInstaller { get; set; }
 
         private ReorderableList _blendShapesToChangeList;
         private ReorderableList _materialsToReplaceList;
@@ -56,6 +58,7 @@ namespace dog.miruku.inventory
             IsNotItem = serializedObject.FindProperty("_isNotItem");
             LayerPriority = serializedObject.FindProperty("_layerPriority");
             Save = serializedObject.FindProperty("_saved");
+            IntegrateMenuInstaller = serializedObject.FindProperty("_integrateMenuInstaller");
 
             BlendShapesToChange = serializedObject.FindProperty("_blendShapesToChange");
             _blendShapesToChangeList =
@@ -364,6 +367,13 @@ namespace dog.miruku.inventory
                     EditorGUILayout.PropertyField(Save,
                         new GUIContent(L.Get("saved"),
                             "체크하면 이 아이템이 월드 간에 저장됩니다."));
+                }
+
+                if(Inventory.TryGetComponent<ModularAvatarMenuInstaller>(out _))
+                {
+                    EditorGUILayout.PropertyField(IntegrateMenuInstaller,
+                        new GUIContent(L.Get("integrateMenuInstaller"),
+                            "체크하면 MA Menu Installer로 지정한 메뉴에 아이템 메뉴가 설치됩니다."));
                 }
             }
 

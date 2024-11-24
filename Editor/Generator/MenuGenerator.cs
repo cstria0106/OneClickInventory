@@ -57,7 +57,8 @@ namespace dog.miruku.inventory
         {
             // If MAMenuInstaller is found, set the parent to the avatar
             var menuInstaller = node.Value.GetComponent<ModularAvatarMenuInstaller>();
-            if (menuInstaller != null)
+            var useMenuInstaller = menuInstaller != null && node.IsItem && node.Value.IntegrateMenuInstaller;
+            if (useMenuInstaller)
             {
                 parent = node.Avatar.transform;
             }
@@ -83,7 +84,7 @@ namespace dog.miruku.inventory
             else return null;
 
             // Copy menu installer to generated menu object
-            if (menuInstaller != null)
+            if (useMenuInstaller)
             {
                 var newMenuInstaller = menu.gameObject.AddComponent<ModularAvatarMenuInstaller>();
                 newMenuInstaller.menuToAppend = menuInstaller.menuToAppend;

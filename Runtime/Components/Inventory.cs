@@ -102,6 +102,10 @@ namespace dog.miruku.inventory.runtime
 
         public bool Saved => _saved;
 
+        [SerializeField] private bool _integrateMenuInstaller;
+
+        public bool IntegrateMenuInstaller => _integrateMenuInstaller;
+
         private void Reset()
         {
             _name = gameObject.name;
