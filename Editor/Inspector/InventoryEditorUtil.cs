@@ -21,11 +21,14 @@ namespace dog.miruku.inventory
 
         private static void AvatarHierarchy(InventoryNode node, int level, AvatarHierarchyFolding folding)
         {
+            if (!node.ShouldBeSubmenu && !node.IsItem) return;
+            if (node.IntegratedMenuInstaller) return;
+
             folding.NodesShow.TryAdd(node.Key, false);
             var menuItemsToInstall = node.MenuItemsToInstall.ToArray();
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.Space(level * 10, false);
-            if (node.HasChildren || menuItemsToInstall.Length > 0)
+            if (node.ShouldBeSubmenu)
             {
                 folding.NodesShow[node.Key] = EditorGUILayout.BeginFoldoutHeaderGroup(folding.NodesShow[node.Key],
                     GUIContent.none,
@@ -36,7 +39,7 @@ namespace dog.miruku.inventory
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.ObjectField(node.Value, typeof(Inventory), true);
             EditorGUI.EndDisabledGroup();
-            if (node.HasChildren || menuItemsToInstall.Length > 0)
+            if (node.ShouldBeSubmenu)
             {
                 EditorGUILayout.EndFoldoutHeaderGroup();
             }
@@ -64,7 +67,7 @@ namespace dog.miruku.inventory
         private static void AvatarHierarchy(VRCAvatarDescriptor avatar, AvatarHierarchyFolding folding)
         {
             var rootNodes = InventoryNode.ResolveRootNodes(avatar);
-            foreach (var node in rootNodes)
+            foreach (var node in rootNodes.Where(node => node.ShouldBeSubmenu))
             {
                 AvatarHierarchy(node, 0, folding);
             }

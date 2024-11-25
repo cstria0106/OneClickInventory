@@ -5,18 +5,20 @@ using nadena.dev.modular_avatar.core;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
-using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace dog.miruku.inventory
 {
     public abstract class Generator
     {
-        private static void CreateMaMergeAnimator(Dictionary<AnimatorController, int> controllers, GameObject parent)
+        private static void CreateMaMergeAnimator(InventoryNode node, Dictionary<AnimatorController, int> controllers)
         {
+            var mergeAnimatorObject = new GameObject("MergeAnimator");
+            mergeAnimatorObject.transform.SetParent(node.Root.Value.transform, false);
+
             // Add merge animator
             foreach (var entry in controllers)
             {
-                var mergeAnimator = parent.AddComponent<ModularAvatarMergeAnimator>();
+                var mergeAnimator = mergeAnimatorObject.AddComponent<ModularAvatarMergeAnimator>();
                 mergeAnimator.animator = entry.Key;
                 mergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
                 mergeAnimator.deleteAttachedAnimator = true;
@@ -82,53 +84,18 @@ namespace dog.miruku.inventory
 
         public static void Generate(VRCAvatarDescriptor avatar)
         {
-            // Get avatar inventory config
-            var menuName = "Inventory";
-            Texture2D menuIcon = null;
-            if (avatar.TryGetComponent<InventoryConfig>(out var config))
-            {
-                menuName = config.CustomMenuName;
-                menuIcon = config.CustomIcon;
-            }
-
             // Resolve root nodes
-            var rootNodes = InventoryNode.ResolveRootNodes(avatar);
+            var rootNodes = InventoryNode.ResolveRootNodes(avatar).ToArray();
 
-            // Create inventory object
-            var inventoryObject = new GameObject(menuName);
-            inventoryObject.transform.SetParent(avatar.transform);
-
-            // Create root inventory menu when there are any non-root menu items
-            if (rootNodes.Any(e => !e.Value.InstallMenuInRoot))
-            {
-                // Create menu installer
-                var menuInstaller = inventoryObject.AddComponent<ModularAvatarMenuInstaller>();
-                menuInstaller.menuToAppend = avatar.expressionsMenu;
-
-                // Create root menu
-                var menuItem = inventoryObject.AddComponent<ModularAvatarMenuItem>();
-                menuItem.Control = new VRCExpressionsMenu.Control
-                {
-                    type = VRCExpressionsMenu.Control.ControlType.SubMenu,
-                    name = menuName,
-                    icon = menuIcon
-                };
-                menuItem.MenuSource = SubmenuSource.Children;
-            }
-
+            MenuGenerator.Generate(avatar, rootNodes);
             foreach (var node in rootNodes)
             {
                 // Generate animation
                 var controllers = AnimationGenerator.GenerateControllers(node);
-                var mergeAnimator = new GameObject("MergeAnimator");
-                mergeAnimator.transform.SetParent(node.Root.Value.transform, false);
-                CreateMaMergeAnimator(controllers, mergeAnimator);
+                CreateMaMergeAnimator(node, controllers);
 
                 // Generate parameters
                 CreateMaParameters(node);
-
-                // Generate menu
-                MenuGenerator.Generate(node, inventoryObject.transform);
             }
 
             // Remove Inventory components

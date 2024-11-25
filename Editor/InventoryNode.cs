@@ -34,8 +34,11 @@ namespace dog.miruku.inventory
         public int UsedParameterMemory => (IsInventory ? Value.IsUnique ? ChildrenBits : ChildItems.Count() : 0) +
                                           Children.Select(e => e.UsedParameterMemory).Sum();
 
-        // as a inventory
+        // as inventory
         public bool IsInventory => HasChildItems;
+
+        public bool ShouldBeSubmenu =>
+            Children.Any(child => child.IsItem && child.IntegratedMenuInstaller == null) || MenuItemsToInstall.Any() || Children.Any(e => e.ShouldBeSubmenu);
 
         public InventoryNode DefaultChild =>
             Value.IsUnique ? ChildItems.FirstOrDefault(e => e.Value.Default) : null;
@@ -51,6 +54,12 @@ namespace dog.miruku.inventory
         public int ParameterValue => ParentIsUnique ? Index : 1;
         public int ParameterBits => ParentIsUnique ? Parent.ChildrenBits : 1;
         public int ParameterDefault => ParentIsUnique ? 0 : Value.Default ? 1 : 0;
+
+        public ModularAvatarMenuInstaller IntegratedMenuInstaller =>
+            Value.TryGetComponent<ModularAvatarMenuInstaller>(out var installer) && IsItem &&
+            Value.IntegrateMenuInstaller
+                ? installer
+                : null;
 
         private InventoryNode(VRCAvatarDescriptor avatar, InventoryNode parent, Inventory value, int index,
             Dictionary<string, int> nameCount)
